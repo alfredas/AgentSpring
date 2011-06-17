@@ -1,0 +1,18 @@
+== Maven ==
+Add a repository:
+<pre>
+    <repository>
+        <id>eeni.snapshots</id>
+        <name>TU Delft TBM ENI Archiva Repository</name>
+        <url>http://test.eeni.tbm.tudelft.nl:8080/archiva/repository/snapshots</url>
+    </repository>  
+</pre>
+
+Add a dependency:
+<pre>
+    <dependency>
+        <groupId>agentspring</groupId>
+        <artifactId>engine</artifactId>
+        <version>0.0.1a-SNAPSHOT</version>
+    </dependency>
+</pre>
