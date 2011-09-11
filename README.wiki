@@ -2,29 +2,44 @@
 git clone git@github.com:alfredas/AgentSpring.git
 
 cd agentspring-facade/
+
 mvn clean install
 
 cd ../agentspring-engine/
+
 mvn clean install
 
 cd ../agentspring-face/
+
 mvn clean install
+
 mvn tomcat:deploy
 
 for this you need to have a settings.xml file in your ~/.m2 folder with the following:
 <pre>
+
 <settings>
+
     <server>
+
       <id>myserver</id>
+
       <username>user</username>
+
       <password>pwd</password>
+
     </server>
+
   </servers>
+
 </settings>
+
 </pre>
+
 ... where user and pwd match your tomcat manager settings
 
 cd ../agentspring-example/
+
 mvn clean install
 
 == RUNNING ==
