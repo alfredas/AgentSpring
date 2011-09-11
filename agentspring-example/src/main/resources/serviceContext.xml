@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="engineService" class="agentspring.service.EngineServiceImpl"/>
+	<bean id="dbService" class="agentspring.service.DbServiceImpl"/>
+	<bean id="filters" class="agentspring.service.Filters"/>
+
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="dbRmi">
+	    <property name="serviceName" value="DbService" />
+	    <property name="service" ref="dbService" />
+	    <property name="serviceInterface" value="agentspring.facade.DbService" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="engineRmi">
+	  <property name="serviceName" value="EngineService" />
+	  <property name="service" ref="engineService" />
+	  <property name="serviceInterface"  value="agentspring.facade.EngineService" />
+	</bean>
+
+</beans>

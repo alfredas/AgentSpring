@@ -1,18 +1,48 @@
-== Maven ==
-Add a repository:
-<pre>
-    <repository>
-        <id>eeni.snapshots</id>
-        <name>TU Delft TBM ENI Archiva Repository</name>
-        <url>http://test.eeni.tbm.tudelft.nl:8080/archiva/repository/snapshots</url>
-    </repository>  
-</pre>
+== INSTALL (linux) ==
+git clone git@github.com:alfredas/AgentSpring.git
 
-Add a dependency:
+cd agentspring-facade/
+mvn clean install
+
+cd ../agentspring-engine/
+mvn clean install
+
+cd ../agentspring-face/
+mvn clean install
+mvn tomcat:deploy
+
+for this you need to have a settings.xml file in your ~/.m2 folder with the following:
 <pre>
-    <dependency>
-        <groupId>agentspring</groupId>
-        <artifactId>engine</artifactId>
-        <version>0.0.1a-SNAPSHOT</version>
-    </dependency>
+<settings>
+    <server>
+      <id>myserver</id>
+      <username>user</username>
+      <password>pwd</password>
+    </server>
+  </servers>
+</settings>
 </pre>
+... where user and pwd match your tomcat manager settings
+
+cd ../agentspring-example/
+mvn clean install
+
+== RUNNING ==
+cd agentspring-example/
+
+mvn exec:java -Pservice -Djava.security.policy=service.policy -Dparameters.file=parameters.properties 
+
+open browser: http://localhost:8080/agentspring-face
+
+== CREATING OWN PROJECT ==
+Download and install SpringSourceToolSuite IDE from http://www.springsource.com/landing/best-development-tool-enterprise-java
+
+Do New Project -> Maven -> Import Existing Project
+
+... and import agentspring-example/
+
+Use and modify agentspring-example to create your own simulation
+
+
+
+

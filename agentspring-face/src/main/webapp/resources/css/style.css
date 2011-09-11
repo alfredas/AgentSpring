@@ -1,0 +1,355 @@
+/*** basic definitions ***/
+p,a {
+    font-family: arial;
+}
+
+html,body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+.faux {
+    /*background: white url(../img/faux.png) repeat-y 0 0;*/
+    background-color: #ffffff;
+}
+
+/*** helpers ***/
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.invisible {
+    display: none;
+}
+
+.clear {
+    clear: both;
+}
+
+.inline {
+    display: inline;
+}
+
+/*** generic elements ***/
+#error {
+    background-color: red;
+    color: white;
+}
+
+#success {
+    background-color: green;
+    color: white;
+}
+
+#bottom-bar {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+}
+
+#error-bar {
+    background-color: red;
+    color: white;
+    display: none;
+}
+
+#loadingDiv {
+    position: fixed;
+    top: 25px;
+    text-align: center;
+    width: 100%;
+    z-index: 10;
+    display: n
+}
+
+/*** engine status and controls ***/
+#status {
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    z-index: 10;
+    height: 1em;
+    font-family: arial;
+    font-size: 10pt;
+    padding-left: 10px;
+}
+
+.status-offline {
+    background-color: #b6c6ce;
+    color: white
+}
+
+.status-stopped {
+    background-color: #b6c6ce;
+    color: white
+}
+
+.status-running {
+    background-color: #b6c6ce;
+    color: white
+}
+
+.controls {
+    position: fixed;
+    top: 3px;
+    right: 15px;
+    z-index: 100
+}
+
+.controls img {
+    display: none;
+}
+
+.tabnav {
+    background-color: #B6C6CE;
+    clear: both;
+    margin: 0;
+    padding-top: 25px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 2;
+}
+
+.tabnav-separ {
+    background-color: #EADBC0;
+    border-bottom: 1px solid #A7A8A5;
+    height: 0.5em;
+    position: fixed;
+    top: 49px;
+    width: 100%;
+    z-index: 2;
+}
+
+/*** selection menu ***/
+.selection {
+    background-color: #EADBC0;
+    border-right: 0 none;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+    top: 49px;
+    width: 250px;
+}
+
+#residual {
+    border-right: 1px solid #a7a8a5;  
+    height: 100%;
+}
+
+.selection a {
+    text-decoration: none;
+    display: block;
+    height: 1em;
+    padding: 0.5em;
+    border-bottom: 1px solid #a7a8a5;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.selection a:active {
+    color: #a7a8a5;
+}
+
+.selection a:hover {
+    background-color: #e6cdbf;
+    color: #ffffff;
+}
+
+.selection .button1 {
+    background-color: #eadbc0;
+    border-right: 1px solid #a7a8a5;
+}
+
+.selection .button1-sel {
+    background-color: white;
+    color: #a7a8a5;
+    border-right: 0px;
+}
+
+.selection .button2 {
+    background-color: #eadbc0;
+    color: #9b3738;
+    border-right: 1px solid #a7a8a5;
+}
+
+.selection .button2:hover {
+    color: #9b3738;
+}
+
+.selection .button2-sel {
+    background-color: white;
+    color: #9b3738;
+    border-top: 1px solid #a7a8a5;
+    border-right: 0px;
+}
+
+/*** content area ***/
+.content {
+    margin-left: 250px;
+    margin-top: 0.5em;
+    padding-left: 0.5em;
+    position: relative;
+    top: 55px;
+}
+
+#editing {
+  float:left; 
+}
+
+#editing_help {
+    float:right; 
+    width: 400px;
+}
+
+.content2 {
+    margin-top: 0.5em;
+    padding-left: 0.5em;
+    position: relative;
+    top: 55px;
+}
+
+/*** dashboard ***/
+#charts {
+    padding-left: 0.1em;
+}
+
+#charts p {
+    border: 1px solid #a7a8a5;
+}
+
+.vis-container {
+    position:relative;
+    display:inline-block;
+}
+
+.vis-remove {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    cursor:pointer
+}
+
+/*** visuals editor ***/
+.source {
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    width: 150px;
+    height: 25px;
+    background-color: #B6C6CE;
+    margin-left: 0.2em;
+    margin-top: 10px;
+    color: white;
+    padding: 0.5em;
+    cursor: pointer;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    border: 1px solid black;
+}
+
+/*** sources editor ***/
+#editor {
+    width: 900px;
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+    font-size: 12pt;
+}
+
+#output {
+    width: 900px;
+    height: 300px;
+    position: relative;
+    overflow: auto;
+    border: 1px solid black;
+    font-size: 12pt;
+    overflow-x: auto;
+    /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    /* width: 99%; */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+/*** parameters editor ***/
+.obj {
+
+    margin-bottom: 10px;
+    background-color: #F7F7F7;
+    padding: 5px;
+}
+
+.obj .label {
+    display: inline;
+    font-family: arial;
+}
+
+
+.objtitle {
+    font-family: arial;
+}
+
+.obj i {
+    visibility: hidden;
+}
+
+.obj .value {
+    width: 50px;
+    margin-left: 10px;
+}
+
+label {
+    margin-right: 10px;
+    font-family: arial;
+}
+
+#save {
+    margin-top: 10px;
+}
+
+.labeljust {
+    float: left;
+    width: 150px;
+}
+
+select {
+    width: 200px;
+}
+
+.slider {
+    width: 200px;
+    display: inline-block;
+}
+
+#editing_help {
+	font-family: arial;
+}
+
+/*** log ***/
+#log {
+    font-family: arial;
+}
+
+/*** logo ***/
+#agentspring-logo {
+	  position: fixed;
+	  bottom: 10px;
+	  right: 10px;
+}
+
+
+#agentspring-logo img {
+    width: 97px;
+    height: 131px;
+    border: none;
+}
+
+
