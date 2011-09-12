@@ -19,6 +19,7 @@ for this you need to have a settings.xml file in your ~/.m2 folder with the foll
 <pre>
 
 <settings>
+  <servers>
 
     <server>
 
