@@ -173,7 +173,7 @@ function setup_scenario() {
     });
 }
 
-function init_status(functions) {
+function init_status(functions, restart_hook) {
     $('#loadingDiv').hide().ajaxStart(function() {
 // $('body').css('cursor', 'wait');
             $(this).show();
@@ -200,6 +200,9 @@ function init_status(functions) {
             url: root + "engine/start",
             success: function(response) {
                 if (response['success']) {
+                    if (restart_hook != undefined) {
+                        restart_hook();
+                    }
                     update_status();
                 }
             },

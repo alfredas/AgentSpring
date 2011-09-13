@@ -59,12 +59,32 @@ function visual_dragover(ev) {
     return false;
 }
 
-function show_monitor() {
+function restart_hook() {
+    if (page == "monitor") {
+        show_monitor(true);
+    } else {
+        for(key in displayed_visuals) {
+            show_chart(key);
+        }
+    }
+    for (key in visuals) {
+        visuals[key].last_tick = 0;
+    }
+}
+
+function clear_visuals() {
+    for (key in charts) {
+        charts[key].destroy();
+    }
+    charts = {};
+    $('#charts').empty();
+    displayed_visuals = {};
+}
+
+function show_monitor(reset) {
     exceptions = {};
-    if (page != "monitor") {
-        displayed_visuals = {};
-        $('#charts').empty();
-        charts = {};
+    if (page != "monitor" || reset == true) {
+        clear_visuals();
     }
     page = "monitor";
     for ( var i = 0; i < monitor.length; i++) {
@@ -85,11 +105,9 @@ function show_monitor() {
 function show_chart(chart) {
     exceptions = {};
     page = "chart";
-    displayed_visuals = {};
-    $('#charts').empty();
+    clear_visuals();
     $("#charts")[0].removeEventListener("drop", visual_drop, false);
     $("#charts")[0].removeEventListener("dragover", visual_dragover, false);
-    charts = {};
     $('.button2-sel').removeClass('button2-sel').addClass('button2');
     $('.button1-sel').removeClass('button1-sel').addClass('button1');
     $('#' + chart).removeClass('button1').addClass('button1-sel');
@@ -178,7 +196,7 @@ $(document).ready(function() {
     } else {
         show_chart(parseInt(visual));
     }
-    init_status([ update_log, update_visuals ]);
+    init_status([ update_log, update_visuals ], restart_hook);
     $("#monitor").click(function() {
         show_monitor();
     });
