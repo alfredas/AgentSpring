@@ -49,6 +49,22 @@ function Highchart(chart_data) {
 Highchart.prototype.init = function(series) {
     var chart;
     var chart_options = new BasicChartOptions();
+
+    var container = $("<div />", {
+        class : 'vis-container'
+    })[0];
+    var buttons = $("<div />", {
+        class : 'vis-buttons'
+    })
+    var edit_button = $('<img/>', {
+        src : root + "resources/img/edit.png",
+        class : 'vis-button',
+        alt : this.chart_data.id
+    });
+    $(edit_button).click(function() {
+        window.location = root + "visuals/edit?id=" + this.alt;
+    });
+
     if (this.chart_data.clazz == "scatter") {
         chart_options.chart.defaultSeriesType = "scatter";
     } else {
@@ -59,26 +75,32 @@ Highchart.prototype.init = function(series) {
             chart_options.chart.defaultSeriesType = this.chart_data.type;
         }
     }
+    if (page == "monitor") {
+        var button = $('<img/>', {
+            src : root + "resources/img/remove2.png",
+            class : 'vis-button',
+            alt : this.chart_data.id
+        });
+        $(buttons).append(button);
+        $(buttons).append(edit_button);
+        $(button).click(remove_visual);
+    } else {
+        $(buttons).append(edit_button);
+        chart_options.chart.width = 1000;
+        chart_options.chart.height = 500;
+    }
+
     chart_options.yAxis.title.text = this.chart_data.yaxis;
     chart_options.title.text = this.chart_data.title;
-    var container = $("<div />", {
-        class : 'vis-container'
-    })[0];
     chart_options.chart.renderTo = container;
     chart_options.series = series;
+
     chart = new Highcharts.Chart(chart_options);
     $('#charts').append(container);
     charts[this.chart_data.id] = chart;
     displayed_visuals[this.chart_data.id] = true;
-    if (page == "monitor") {
-        var button = $('<img/>', {
-            src : root + "resources/img/remove2.png",
-            class : 'vis-remove',
-            alt : this.chart_data.id
-        });
-        $(container).append(button);
-        $(button).click(remove_visual);
-    }
+    $(container).append(buttons);
+
     return chart;
 }
 
