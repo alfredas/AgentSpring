@@ -41,6 +41,7 @@ public class Filters {
         return startNodes;
     }
 
+    @SuppressWarnings("unused")
     private NodeBacked getEntity(Object node) {
         if (!(node instanceof Neo4jVertex))
             throw new RuntimeException("Object is not neo4j vertex");
