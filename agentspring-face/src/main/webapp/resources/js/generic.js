@@ -231,3 +231,24 @@ function init_status(functions) {
     });
     setup_scenario();
 }
+
+function get_url_parameter(name) {
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(window.location.href);
+  if(results == null)
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function title_sorter(a, b) {
+    if (a.title.toLowerCase() < b.title.toLowerCase()) {
+        return -1;
+    } else if (a.title.toLowerCase() > b.title.toLowerCase()) {
+        return 1;
+    } else {
+        return 0;
+    }
+}

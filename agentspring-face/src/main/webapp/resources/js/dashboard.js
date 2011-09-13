@@ -14,12 +14,8 @@ function remove_visual() {
     delete displayed_visuals[id];
     $(charts[id].options.chart.renderTo).remove();
     delete charts[id];
-    if (monitor.length == 0) {
-        $('<p/>', {
-            text : "Drag and drop visuals here"
-        }).appendTo("#charts");
-    }
     save_monitor();
+    show_monitor();
 }
 
 function update_visual(visual_id) {
@@ -42,10 +38,12 @@ function visual_drop(ev) {
     if (ev.stopPropagation) {
         ev.stopPropagation(); // Stops some browsers from redirecting.
     }
+    var id = parseInt(ev.dataTransfer.getData('Text'));
+    if (isNaN(id))
+        return;
     if (monitor.length == 0) {
         $("#charts").empty();
     }
-    var id = parseInt(ev.dataTransfer.getData('Text'));
     if (monitor.indexOf(id) == -1) {
         monitor.push(id);
     }
@@ -71,6 +69,12 @@ function show_monitor() {
     page = "monitor";
     for ( var i = 0; i < monitor.length; i++) {
         update_visual(monitor[i]);
+    }
+    if (monitor.length == 0) {
+        $('#charts').empty();
+        $('<p/>', {
+            text : "Drag and drop visuals here"
+        }).appendTo("#charts");
     }
     $("#charts")[0].addEventListener("drop", visual_drop, false);
     $("#charts")[0].addEventListener("dragover", visual_dragover, false);
@@ -138,7 +142,7 @@ function load_visuals() {
         url : "visuals/list",
         success : function(response) {
             $("#visuals").empty();
-            var visz = response["visuals"];
+            var visz = response["visuals"].sort(title_sorter);
             for ( var i = 0; i < visz.length; i++) {
                 var visual = visz[i];
                 var link = $("<a/>", {
@@ -168,7 +172,12 @@ function load_visuals() {
 $(document).ready(function() {
     load_visuals();
     load_monitor();
-    show_monitor();
+    var visual = get_url_parameter("visual");
+    if (visual == "") {
+        show_monitor();
+    } else {
+        show_chart(parseInt(visual));
+    }
     init_status([ update_log, update_visuals ]);
     $("#monitor").click(function() {
         show_monitor();
