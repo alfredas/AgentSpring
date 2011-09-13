@@ -256,10 +256,19 @@ html,body {
     border-radius: 10px;
     -moz-border-radius: 10px;
     border: 1px solid black;
+    position: relative;
 }
 
 .inactive {
     cursor: auto;
+}
+
+.source-edit {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    cursor: pointer;
+    z-index: 20;
 }
 
 /*** sources editor ***/
