@@ -34,14 +34,16 @@ function update_fields() {
 function update_visuals() {
     if ($('#id').val() == '') {
         $('#delete').hide();
+        $('#show').hide();
     } else {
         $('#delete').show();
+        $('#show').show();
     }
     ajax({
         url : root + "visuals/list",
         success : function(response) {
             $("#visuals").empty();
-            var visz = response["visuals"];
+            var visz = response["visuals"].sort(title_sorter);
             for ( var i = 0; i < visz.length; i++) {
                 var visual = visz[i];
                 var link = $('<a/>', {
@@ -68,9 +70,14 @@ function update_sources() {
         url : root + "sources/list",
         success : function(response) {
             var visual = visuals[visual_id];
-            var sources = response.sources;
+            var sources = response.sources.sort(title_sorter);
             $("#sources").empty();
             $("#selected_sources").empty();
+            if (visual.sourcesIds.length != 0) {
+                $("#selected_sources").append($("<p/>", {
+                    text: "Clink on data source to remove it from this visual:"
+                }));
+            }
             for ( var i = 0; i < sources.length; i++) {
                 source = sources[i];
                 var link = $('<div />', {
@@ -88,8 +95,25 @@ function update_sources() {
                         update_sources();
                     }
                 });
+                var edit = $('<img/>', {
+                    src : root + "resources/img/edit.png",
+                    class : 'source-edit',
+                    alt : source.id,
+                    title: "Edit '" + source.title + "' data source"
+                });
+                $(edit).click(function(event) {
+                    event.stopPropagation();
+                    window.location = root + "sources/edit?id=" + this.alt;
+                });
+                $(link).append(edit);
                 if (visual.sourcesIds.indexOf(source.id) != -1) {
                     $("#selected_sources").append(link);
+                    var link2 = $('<div />', {
+                        class: 'source inactive',
+                        text: source.title
+                    });
+                    $(link2).fadeTo(0, 0.5);
+                    $("#sources").append(link2);
                 } else {
                     $("#sources").append(link);
                 }
@@ -149,4 +173,8 @@ $(document).ready(function() {
                     window.location = root + "visuals/delete?id=" + id;
                 });
             });
+
+    $('#show').click(function() {
+        window.location = root + "?visual=" + $('#id').val();
+    });
 });

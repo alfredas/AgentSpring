@@ -8,8 +8,5 @@
     </a>
 </div>
 <script type="text/javascript">
-    var root = $
-    {
-        root
-    };
+    var root = ${root};
 </script>
