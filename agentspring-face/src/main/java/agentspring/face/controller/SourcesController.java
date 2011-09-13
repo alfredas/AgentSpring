@@ -16,6 +16,7 @@ import agentspring.facade.DbService;
 import agentspring.face.JsonResponse;
 import agentspring.face.model.Source;
 import agentspring.face.model.dao.SourceDAO;
+import agentspring.face.model.dao.VisualDAO;
 
 /**
  * Data sources CRUD
@@ -28,6 +29,8 @@ public class SourcesController {
 
     @Autowired
     private SourceDAO sourceDao;
+    @Autowired
+    private VisualDAO visualDao;
     @Autowired
     private DbService dbService;
 
@@ -53,6 +56,14 @@ public class SourcesController {
         return response;
     }
 
+    @RequestMapping(value = "/visuals", method = RequestMethod.GET)
+    @ResponseBody
+    public JsonResponse visual(@RequestParam("id") int id) {
+        JsonResponse response = new JsonResponse(true);
+        response.put("visuals", visualDao.getVisualsForSource(id));
+        return response;
+    }
+
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public ModelAndView edit(@RequestParam("id") int id) {
         ModelAndView response = new ModelAndView(VIEW);
@@ -63,8 +74,10 @@ public class SourcesController {
 
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
-    public JsonResponse save(@RequestParam("id") Integer id, @RequestParam("query") String query,
-            @RequestParam("start_node") String start_node, @RequestParam("title") String title) {
+    public JsonResponse save(@RequestParam("id") Integer id,
+            @RequestParam("query") String query,
+            @RequestParam("start_node") String start_node,
+            @RequestParam("title") String title) {
         query = HtmlUtils.htmlEscape(query.trim());
         start_node = HtmlUtils.htmlEscape(start_node.trim());
         title = HtmlUtils.htmlEscape(title.trim());
@@ -80,7 +93,8 @@ public class SourcesController {
             response.setError(error);
             return response;
         }
-        int newId = this.sourceDao.saveSource(new Source(id, title, start_node, query));
+        int newId = this.sourceDao.saveSource(new Source(id, title, start_node,
+                query));
         response.put("id", newId);
         return response;
     }

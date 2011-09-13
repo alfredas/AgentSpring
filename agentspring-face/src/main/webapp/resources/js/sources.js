@@ -1,15 +1,37 @@
 var editor;
 
 function update_sources() {
+    $("#using").empty();
+    $("#using").append("Visuals using this data source: ");
     if ($('#id').val() == '') {
         $('#delete').hide();
+        $('#using').hide();
     } else {
-        $('#delete').show();
+        $('#using').show();
+        ajax({
+            url : root + "sources/visuals?id=" + $("#id").val(),
+            success : function(response) {
+                visuals = response.visuals.sort(title_sorter);
+                if (visuals.length == 0) {
+                    $("#using").append("none");
+                } else {
+                    for (var i = 0; i < visuals.length; i++) {
+                        $("#using").append($("<a/>", {
+                            text: visuals[i].title,
+                            href: root + "visuals/edit?id=" + visuals[i].id
+                        }));
+                        if (i < visuals.length - 1) {
+                            $("#using").append(", ");
+                        }
+                    }
+                }
+            }
+        });
     }
     ajax({
         url : root + "sources/list",
         success : function(response) {
-            sources = response.sources;
+            sources = response.sources.sort(title_sorter);
             $("#sources").empty();
             for ( var i = 0; i < sources.length; i++) {
                 source = sources[i];
@@ -101,6 +123,8 @@ $(document).ready(
 
 window.onload = function() {
     editor = ace.edit("editor");
-    var JavaMode = require("ace/mode/java").Mode;
-    editor.getSession().setMode(new JavaMode());
+    editor.setTheme("ace/theme/eclipse");
+    editor.setShowPrintMargin(true);
+    var GroovyMode = require("ace/mode/groovy").Mode;
+    editor.getSession().setMode(new GroovyMode());
 };

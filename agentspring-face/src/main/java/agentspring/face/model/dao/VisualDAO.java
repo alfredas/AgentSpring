@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -75,6 +74,16 @@ public class VisualDAO {
             return null;
         else
             return new ArrayList<Visual>(this.selectedVisuals.values()).get(0);
+    }
+
+    public List<Visual> getVisualsForSource(int id) {
+        final String sql = "SELECT * FROM " + Table.VISUALS + " JOIN "
+                + Table.VISUALS_SOURCES + " ON id = visual WHERE source = ?";
+        final Object[] args = new Object[] { id };
+        jdbcTemplate.query(sql, args, new FullVisualRowMapper());
+        List<Visual> result = new ArrayList<Visual>();
+        result.addAll(this.selectedVisuals.values());
+        return result;
     }
 
     public List<Visual> listFullVisuals() {

@@ -6,7 +6,9 @@
 <script type="text/javascript" src="${root}/resources/jslib/ace.js"
     charset="utf-8"></script>
 <script type="text/javascript"
-    src="${root}/resources/jslib/mode-java.js" charset="utf-8"></script>
+    src="${root}/resources/jslib/mode-groovy.js" charset="utf-8"></script>
+<script type="text/javascript"
+    src="${root}/resources/jslib/theme-eclipse.js" charset="utf-8"></script>
 <script type="text/javascript"
     src="${root}/resources/jslib/jquery.dump.js" charset="utf-8"></script>
 <script type="text/javascript" src="${root}/resources/js/sources.js"></script>
@@ -19,6 +21,16 @@
     </div>
     <div class="content">
         <div id="editing">
+            <div>
+                <input type="button" value="Test query" id="test" /> <input
+                    type="button" value="Save data source" id="save" />
+                <input type="button" value="Delete data source"
+                    id="delete" />
+                <div id="success" class="invisible inline"></div>
+                <div id="error" class="invisible inline"></div>
+            </div>
+            <div id="using"></div>
+            <hr />
             <label for="start_node">Start node: </label> <select
                 id="start_node">
                 <option value="">[No start node]</option>
@@ -34,24 +46,13 @@
                 </c:forEach>
             </select><input id="id" value="${data_source.id}" type="hidden" /> <label
                 for="title">Data source title: </label><input id="title"
-                value="${data_source.title}" maxlength="40"/>
+                value="${data_source.title}" maxlength="40" />
             <div id="editor">${data_source.script}</div>
-            <br />
-            <div>
-                <div class="left">
-                    <input type="button" value="Test query" id="test" />
-                    <input type="button" value="Save query" id="save" />
-                    <input type="button" value="Delete data source"
-                        id="delete" />
-                    <div id="success" class="invisible inline"></div>
-                    <div id="error" class="invisible inline"></div>
-                </div>
-            </div>
-            <br />
             <div>
                 <pre id="output"></pre>
             </div>
         </div>
+        -
         <div id="editing_help">
             For example:
             <pre>
@@ -62,6 +63,7 @@
        .sum{it.capacity}]</pre>
             See: <a href="https://github.com/tinkerpop/gremlin/wiki">Gremlin Wiki</a>
         </div>
+
     </div>
     <%@ include file="footer.jsp"%>
 </body>
