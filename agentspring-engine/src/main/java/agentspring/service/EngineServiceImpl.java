@@ -61,18 +61,15 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         try {
             scenarios = (List<String>) applicationContext.getBean("scenarios");
         } catch (NoSuchBeanDefinitionException err) {
-            throw new EngineException(
-                    "Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
+            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
         } catch (BeansException err) {
-            throw new EngineException(
-                    "Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
+            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
         }
 
         if (scenarios != null && scenarios.size() > 0) {
             init(scenarios.get(0));
         } else {
-            throw new EngineException(
-                    "Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
+            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
         }
     }
 
@@ -90,8 +87,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         this.entityStateFactory = new NodeEntityStateFactory();
         this.entityStateFactory.setGraphDatabaseContext(this.graphDatabaseContext);
         this.entityStateFactory.setEntityManagerFactory(null);
-        this.entityStateFactory.setNodeDelegatingFieldAccessorFactory(new NodeDelegatingFieldAccessorFactory(
-                this.graphDatabaseContext));
+        this.entityStateFactory.setNodeDelegatingFieldAccessorFactory(new NodeDelegatingFieldAccessorFactory(this.graphDatabaseContext));
         this.loadScenario(this.currentScenario);
     }
 
@@ -302,6 +298,9 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
                         if (!Double.isNaN(annotation.from()) && !Double.isNaN(annotation.to())) {
                             parameter.setFrom(annotation.from());
                             parameter.setTo(annotation.to());
+                        }
+                        if (!Double.isNaN(annotation.step())) {
+                            parameter.setStep(annotation.step());
                         }
                         cfgObj.addParameter(parameter);
                     }

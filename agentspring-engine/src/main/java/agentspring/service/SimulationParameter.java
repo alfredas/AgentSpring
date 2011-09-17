@@ -15,4 +15,6 @@ public @interface SimulationParameter {
     double from() default Double.NaN;
 
     double to() default Double.NaN;
+
+    double step() default Double.NaN;
 }

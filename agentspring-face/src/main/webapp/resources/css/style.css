@@ -316,6 +316,7 @@ html,body {
 
 .obj .param .paramvalue {
     display: table-cell;  
+    text-align: right;
 }
 
 .obj .label {
@@ -333,7 +334,12 @@ html,body {
 }
 
 .obj .value {
-    width: 50px;
+    width: 100px;
+    margin-left: 10px;
+}
+
+.obj select {
+    width: 100px;
     margin-left: 10px;
 }
 

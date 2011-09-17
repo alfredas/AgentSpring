@@ -50,6 +50,11 @@ function update_fields() {
                     var label = field.label;
                     var from = field.from;
                     var to = field.to;
+                    var step = field.step;
+                    
+                    if (step == null) {
+                    	step = (Math.abs(to - from)) / 1000;
+                    }
                     paramdiv.append($("<div/>", {
                         class: 'label',
                         text: label
@@ -67,20 +72,32 @@ function update_fields() {
                             value: value,
                             min: from,
                             max: to,
-                            step: (Math.abs(to - from)) / 1000,
+                            step: step,
                             slide: function(event, ui) {
                                 $(this).siblings('.value').val(ui.value);
                             }
                         });
                         valuediv.append(slider);
                     }
-                    valuediv.append($("<input />", {
-                        class: 'value',
-                        value: value,
-                        change: function () {
-                            $($(this).siblings('.slider')).slider("value", this.value);
-                        }
-                    }));
+                    if (value === true || value === false) {
+                    	var select = $("<select />");
+                    	if (value) {
+                    		select.append("<option value=\"true\" selected>True</option>");
+                    		select.append("<option value=\"false\">False</option>");
+                    	} else {
+                    		select.append("<option value=\"true\">True</option>");
+                    		select.append("<option value=\"false\" selected>False</option>");
+                    	}
+                    	valuediv.append(select);
+                    } else {
+	                    valuediv.append($("<input />", {
+	                        class: 'value',
+	                        value: value,
+	                        change: function () {
+	                            $($(this).siblings('.slider')).slider("value", this.value);
+	                        }
+	                    }));
+                    }
                     valuediv.append($("<input />", {
                         type: 'hidden',
                         class: 'field',

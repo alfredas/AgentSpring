@@ -10,6 +10,7 @@ public class ScenarioParameter implements Serializable {
     private String label;
     private Double from = null;
     private Double to = null;
+    private Double step = null;
 
     public ScenarioParameter(String field, Object value) {
         this.field = field;
@@ -33,6 +34,16 @@ public class ScenarioParameter implements Serializable {
         this(field, value, label);
         this.from = from;
         this.to = to;
+    }
+
+    public ScenarioParameter(String field, Object value, String label, Double from, Double to, Double step) {
+        super();
+        this.field = field;
+        this.value = value;
+        this.label = label;
+        this.from = from;
+        this.to = to;
+        this.step = step;
     }
 
     public Double getFrom() {
@@ -66,4 +77,13 @@ public class ScenarioParameter implements Serializable {
     public void setValue(Object value) {
         this.value = value;
     }
+
+    public Double getStep() {
+        return step;
+    }
+
+    public void setStep(Double step) {
+        this.step = step;
+    }
+
 }

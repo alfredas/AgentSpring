@@ -80,6 +80,8 @@ public class ParametersController {
             result = Integer.parseInt(newValue);
         } else if (oldValue instanceof Double) {
             result = Double.parseDouble(newValue);
+        } else if (oldValue instanceof Long) {
+            result = Long.parseLong(newValue);
         } else if (oldValue instanceof Boolean) {
             result = Boolean.parseBoolean(newValue);
         } else {
