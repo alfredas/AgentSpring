@@ -26,7 +26,9 @@ function update_fields() {
                 var objdiv = $("<div/>", {
                     class: 'obj'
                 });
-                var titlediv = $("<div/>");
+                var titlediv = $("<div/>", {
+                    class: 'objtitlediv'
+                });
                 titlediv.append($('<b />', {
                     class: 'objtitle',
                     text: obj.id
@@ -39,16 +41,24 @@ function update_fields() {
                 objdiv.append(titlediv);
                 div.append(objdiv);
                 for (var j = 0; j < obj.parameters.length; j++) {
+                	var paramdiv = $("<div/>", {
+                        class: 'param'
+                    });
+                	objdiv.append(paramdiv);
                     var field = obj.parameters[j];
                     var value = field.value;
                     var label = field.label;
                     var from = field.from;
                     var to = field.to;
-                    objdiv.append($("<div/>", {
+                    paramdiv.append($("<div/>", {
                         class: 'label',
                         text: label
                     }));
-                    objdiv.append(": ");
+                    //paramdiv.append(": ");
+                    var valuediv = $("<div/>", {
+                        class: 'paramvalue'
+                    });
+                    paramdiv.append(valuediv);
                     if (field.from != null && field.to != null) {
                         var slider = $('<div />', {
                             class: "slider"
@@ -62,16 +72,16 @@ function update_fields() {
                                 $(this).siblings('.value').val(ui.value);
                             }
                         });
-                        objdiv.append(slider);
+                        valuediv.append(slider);
                     }
-                    objdiv.append($("<input />", {
+                    valuediv.append($("<input />", {
                         class: 'value',
                         value: value,
                         change: function () {
                             $($(this).siblings('.slider')).slider("value", this.value);
                         }
                     }));
-                    objdiv.append($("<input />", {
+                    valuediv.append($("<input />", {
                         type: 'hidden',
                         class: 'field',
                         value: field.field
