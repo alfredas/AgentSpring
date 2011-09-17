@@ -24,6 +24,7 @@ import org.springframework.data.neo4j.support.GraphDatabaseContext;
 
 import agentspring.Schedule;
 import agentspring.facade.DbService;
+import agentspring.facade.Filters;
 
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
@@ -45,9 +46,8 @@ public class DbServiceImpl implements DbService {
     @Autowired
     GraphDatabaseContext graphDatabaseContext;
 
-    @Autowired
     Filters filters;
-    
+
     @Autowired
     NodeEntityHelper nodeEntityHelper;
 
@@ -118,8 +118,7 @@ public class DbServiceImpl implements DbService {
         return entity.toString();
     }
 
-    private Object executeQuery(final String gremlinQuery, Vertex startNode, final ScriptEngine engine)
-            throws ScriptException {
+    private Object executeQuery(final String gremlinQuery, Vertex startNode, final ScriptEngine engine) throws ScriptException {
         if (startNode != null) {
             engine.getBindings(ScriptContext.ENGINE_SCOPE).put("v", startNode);
         }
@@ -152,10 +151,12 @@ public class DbServiceImpl implements DbService {
 
     private ScriptEngine getScriptEngine() {
         ScriptEngine engine = new GremlinScriptEngine();
-        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("g",
-                new Neo4jGraph(this.graphDatabaseContext.getGraphDatabaseService()));
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("g", new Neo4jGraph(this.graphDatabaseContext.getGraphDatabaseService()));
         filters.init();
+        Nodes n = new Nodes();
+        n.init(engine);
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("f", filters);
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("nodes", n);
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("tick", Schedule.getSchedule().getCurrentTick());
         return engine;
     }
@@ -163,6 +164,29 @@ public class DbServiceImpl implements DbService {
     @Override
     public List<String> getStartNodes() {
         return new ArrayList<String>(nodeEntityHelper.getNodeEntityMap().keySet());
+    }
+
+    public Filters getFilters() {
+        return filters;
+    }
+
+    public void setFilters(Filters filters) {
+        this.filters = filters;
+    }
+
+    class Nodes {
+        ScriptEngine engine;
+
+        public void init(ScriptEngine engine) {
+            this.engine = engine;
+        }
+
+        public List<Vertex> getNodes(String type) throws ScriptException {
+            List<Vertex> startNodes = new ArrayList<Vertex>();
+            this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("nodes", startNodes);
+            this.engine.eval("g.idx('__types__')[[className:'" + nodeEntityHelper.getNodeEntityMap().get(type) + "']] >> nodes");
+            return startNodes;
+        }
     }
 
 }

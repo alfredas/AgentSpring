@@ -10,4 +10,6 @@ public interface DbService {
     public Object executeGremlinQuery(String gremlinQuery) throws ScriptException;
 
     public List<String> getStartNodes();
+
+    public void setFilters(Filters filters);
 }
