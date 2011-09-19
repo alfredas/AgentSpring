@@ -80,7 +80,9 @@ function update_fields() {
                         valuediv.append(slider);
                     }
                     if (value === true || value === false) {
-                    	var select = $("<select />");
+                    	var select = $("<select />", {
+	                        class: 'value'
+                    	});
                     	if (value) {
                     		select.append("<option value=\"true\" selected>True</option>");
                     		select.append("<option value=\"false\">False</option>");
