@@ -29,7 +29,7 @@
     <bean id="dataSource" class="agentspring.face.HsqlDataSource"
         destroy-method="close" init-method="setup">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:/${java.io.tmpdir}/facedb" />
+        <property name="url" value="jdbc:hsqldb:file:${user.home}/.facedb/facedb" />
         <property name="schema" value="AGENTSPRING_FACE"/>
         <property name="username" value="sa" />
         <property name="password" value="" />
