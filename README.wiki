@@ -1,5 +1,5 @@
 == INSTALL (linux) ==
-git clone git@github.com:alfredas/AgentSpring.git
+git clone https://github.com/alfredas/AgentSpring.git
 
 cd agentspring-facade/
 
