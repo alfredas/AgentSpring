@@ -141,8 +141,9 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
             for (String filter : filters) {
                 query += " ?x = " + getFullName(filter, namespace) + " ||";
             }
-            query = query.substring(0, query.lastIndexOf("||")) + ") . } ";
+            query = query.substring(0, query.lastIndexOf("||")) + ") . ";
         }
+        query += "} ";
         if (limit.length() > 0) {
             query += "LIMIT " + limit;
         }
