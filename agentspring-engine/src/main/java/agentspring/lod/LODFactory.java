@@ -31,6 +31,7 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 public class LODFactory implements InitializingBean, ApplicationContextAware {
 
@@ -39,6 +40,8 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
     ApplicationContext applicationContext;
 
     static Logger logger = LoggerFactory.getLogger(LODFactory.class);
+
+    static String ID_NAME = "x_id";
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -87,7 +90,6 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
             // for each result returned create an instance of the class and
             // populate it with data from the query
-            int index = 0;
             for (Map<String, Object> resultMap : executeQuery(endpoint, query, fieldMap.values())) {
                 try {
                     // create new instance of the class
@@ -96,23 +98,25 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     for (Entry<String, Object> entry : resultMap.entrySet()) {
                         // fieldName
                         String fieldName = entry.getKey();
-                        // value to be set
-                        Object value = entry.getValue();
-                        // get the name of the setter method
-                        String setterMethodName = createSetter(fieldName);
-                        // make class primitive if it has a corresponding
-                        // primitive type (eg Interger -> int)
-                        Class<?> primitiveClass = getPrimitiveClass(value.getClass());
-                        // get setter method
-                        Method setter = clazz.getMethod(setterMethodName, primitiveClass);
-                        // set value
-                        setter.invoke(obj, value);
+                        if (!fieldName.equals(ID_NAME)) {
+                            // value to be set
+                            Object value = entry.getValue();
+                            // get the name of the setter method
+                            String setterMethodName = createSetter(fieldName);
+                            // make class primitive if it has a corresponding
+                            // primitive type (eg Interger -> int)
+                            Class<?> primitiveClass = getPrimitiveClass(value.getClass());
+                            // get setter method
+                            Method setter = clazz.getMethod(setterMethodName, primitiveClass);
+                            // set value
+                            setter.invoke(obj, value);
+                        }
                     }
+                    String beanId = resultMap.get(ID_NAME).toString();
                     // apply bean post processor
                     // (agentspring.PersistingBeanPostProcessor) - to store bean
                     // in the graphDB
-                    factory.applyBeanPostProcessorsAfterInitialization(obj, clazz.getName() + "#" + index);
-                    index++;
+                    factory.initializeBean(obj, beanId);
                 } catch (Exception e) {
                     logger.error("Error creating instance of class " + clazz.getName(), e);
                 }
@@ -126,12 +130,12 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
      * construct query based on the fields and type provided
      */
     private String constructQuery(String namespace, String type, String[] filters, String limit, Map<String, String> fieldMap) {
-        String query = "SELECT";
+        String query = "SELECT ?" + ID_NAME;
         for (String field : fieldMap.values()) {
             query += " ?" + field;
         }
         query += " WHERE {";
-        query += " ?x a " + getFullName(type, namespace) + "; ";
+        query += " ?" + ID_NAME + " a " + getFullName(type, namespace) + "; ";
         for (Entry<String, String> entry : fieldMap.entrySet()) {
             query += getFullName(entry.getKey(), namespace) + " ?" + entry.getValue() + "; ";
         }
@@ -139,7 +143,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
         if (filters.length > 0) {
             query += " Filter(";
             for (String filter : filters) {
-                query += " ?x = " + getFullName(filter, namespace) + " ||";
+                query += " ?" + ID_NAME + " = " + getFullName(filter, namespace) + " ||";
             }
             query = query.substring(0, query.lastIndexOf("||")) + ") . ";
         }
@@ -167,6 +171,8 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                 Literal literalValue = result.getLiteral(field);
                 resultMap.put(field, literalValue.getValue());
             }
+            Resource id = result.getResource(ID_NAME);
+            resultMap.put(ID_NAME, id.getURI());
             resultList.add(resultMap);
         }
         qexec.close();

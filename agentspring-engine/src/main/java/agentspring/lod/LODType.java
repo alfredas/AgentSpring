@@ -22,4 +22,6 @@ public @interface LODType {
     String limit() default "";
 
     String[] filters() default {};
+
+    String id() default "";
 }
