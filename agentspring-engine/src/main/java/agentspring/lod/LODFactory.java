@@ -135,12 +135,17 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
             // map: rdf property name <-> field name
             Map<String, String> fieldMap = new HashMap<String, String>();
+            int index = 0;
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(LODProperty.class)) {
                     final LODProperty lodProperty = field.getAnnotation(LODProperty.class);
                     String propertyRDFname = lodProperty.value();
+                    if (propertyRDFname.length() == 0) {
+                        propertyRDFname = "property" + index;
+                    }
                     String fieldName = field.getName();
                     fieldMap.put(propertyRDFname, fieldName);
+                    index++;
                 }
                 if (field.isAnnotationPresent(LODId.class)) {
                     idField = field;

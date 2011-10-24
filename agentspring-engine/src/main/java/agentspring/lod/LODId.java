@@ -10,6 +10,5 @@ import org.springframework.stereotype.Component;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Component
-public @interface LODProperty {
-    String value() default "";
+public @interface LODId {
 }
