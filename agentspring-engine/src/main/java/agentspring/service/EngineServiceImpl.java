@@ -259,7 +259,8 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         } catch (Exception err) {
             logger.error("Error clearing graph", err);
         }
-        this.context = new ClassPathXmlApplicationContext(scenario);
+        String[] configs = {scenario};
+        this.context = new ClassPathXmlApplicationContext(configs, this.applicationContext);
 
         if (!this.currentScenario.equals(scenario) || this.scenarioParameters.isEmpty()) {
             this.scenarioParameters.clear();

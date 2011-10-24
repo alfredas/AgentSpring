@@ -4,10 +4,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -23,6 +25,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.core.GraphBacked;
+import org.springframework.data.neo4j.repository.DirectGraphRepositoryFactory;
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -39,12 +45,20 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
+    DirectGraphRepositoryFactory graphFactory;
+
     static Logger logger = LoggerFactory.getLogger(LODFactory.class);
 
     static String ID_NAME = "x_id";
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (applicationContext.getParent() != null) {
+            graphFactory = (DirectGraphRepositoryFactory) applicationContext.getParent().getBean("directGraphRepositoryFactory");
+        }
+        if (graphFactory == null) {
+            throw new Exception("directGraphRepositoryFactory not found");
+        }
         this.createObjects();
     }
 
@@ -62,9 +76,51 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                 .setUrls(ClasspathHelper.getUrlsForPackagePrefix(this.getBasepackage()))
                 .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner(), new ResourcesScanner()));
 
-        // for each class: construct query, execute it and create objects
-        for (Class<?> clazz : reflections.getTypesAnnotatedWith(LODType.class)) {
+        Map<Class<?>, List<Class<?>>> depMap = new HashMap<Class<?>, List<Class<?>>>();
 
+        // create dependency map by scanning classes and their fields that are
+        // @RelatedTo other classes
+        for (Class<?> clazz : reflections.getTypesAnnotatedWith(LODType.class)) {
+            List<Class<?>> deps = new ArrayList<Class<?>>();
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isAnnotationPresent(LODProperty.class) && field.isAnnotationPresent(RelatedTo.class)) {
+                    deps.add(field.getType());
+                }
+            }
+            depMap.put(clazz, deps);
+        }
+
+        // create the dependency list
+        List<Class<?>> depList = new ArrayList<Class<?>>();
+
+        // order the dependency list so that the classes with fewer (no)
+        // dependencies are populated first and the classes that depend on them
+        // later
+
+        // create index map; indices correspond to the dependency length and
+        // might be identical
+        Map<Class<?>, Integer> indexMap = new HashMap<Class<?>, Integer>();
+        for (Class<?> clazz : depMap.keySet()) {
+            int index = findIndex(clazz, depMap) - 1;
+            indexMap.put(clazz, index);
+        }
+        // create comparator based on index values
+        ValueComparator comparator = new ValueComparator(indexMap);
+        // sort by value using treemap
+        TreeMap<Class<?>, Integer> sortedIdexMap = new TreeMap(comparator);
+        sortedIdexMap.putAll(indexMap);
+
+        // create a list of classes where dependent classes appear after their
+        // dependencies
+        depList.addAll(sortedIdexMap.keySet());
+
+        // logger.info("DEPENDENCIES");
+        // for (Class<?> clazz : depList) {
+        // logger.info("class : {}", clazz);
+        // }
+
+        // for each class: construct query, execute it and create objects
+        for (Class<?> clazz : depList) {
             // get annotation parameters
             LODType lodType = clazz.getAnnotation(LODType.class);
             String endpoint = lodType.endpoint();
@@ -72,6 +128,10 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
             String namespace = lodType.namespace();
             String[] filters = lodType.filters();
             String limit = lodType.limit();
+            String query = lodType.query();
+
+            // id field
+            Field idField = null;
 
             // map: rdf property name <-> field name
             Map<String, String> fieldMap = new HashMap<String, String>();
@@ -82,15 +142,25 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     String fieldName = field.getName();
                     fieldMap.put(propertyRDFname, fieldName);
                 }
+                if (field.isAnnotationPresent(LODId.class)) {
+                    idField = field;
+                }
             }
 
-            // construct query
-            String query = this.constructQuery(namespace, type, filters, limit, fieldMap);
+            if (idField == null) {
+                logger.error("LODFactory error: LODId annotation not present for class {}", clazz);
+                continue;
+            }
+
+            if (query.length() == 0) {
+                // construct query
+                query = this.constructQuery(namespace, type, filters, limit, fieldMap);
+            }
             logger.info("Will execute query: {}", query);
 
             // for each result returned create an instance of the class and
             // populate it with data from the query
-            for (Map<String, Object> resultMap : executeQuery(endpoint, query, fieldMap.values())) {
+            for (Map<String, Object> resultMap : executeQuery(clazz, endpoint, query, fieldMap.values())) {
                 try {
                     // create new instance of the class
                     Object obj = clazz.newInstance();
@@ -98,18 +168,29 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     for (Entry<String, Object> entry : resultMap.entrySet()) {
                         // fieldName
                         String fieldName = entry.getKey();
-                        if (!fieldName.equals(ID_NAME)) {
-                            // value to be set
-                            Object value = entry.getValue();
-                            // get the name of the setter method
-                            String setterMethodName = createSetter(fieldName);
-                            // make class primitive if it has a corresponding
-                            // primitive type (eg Interger -> int)
-                            Class<?> primitiveClass = getPrimitiveClass(value.getClass());
-                            // get setter method
-                            Method setter = clazz.getMethod(setterMethodName, primitiveClass);
-                            // set value
-                            setter.invoke(obj, value);
+                        // value to be set
+                        Object value = entry.getValue();
+
+                        if (value != null) {
+                            if (!fieldName.equals(ID_NAME)) {
+                                // get the name of the setter method
+                                String setterMethodName = createSetter(fieldName);
+                                // make class primitive if it has a
+                                // corresponding
+                                // primitive type (eg Interger -> int)
+                                Class<?> primitiveClass = getPrimitiveClass(value.getClass());
+                                // get setter method
+                                Method setter = clazz.getMethod(setterMethodName, primitiveClass);
+                                // set value
+                                setter.invoke(obj, value);
+                            } else {
+                                // get the name of the setter method
+                                String setterMethodName = createSetter(idField.getName());
+                                // get setter method
+                                Method setter = clazz.getMethod(setterMethodName, String.class);
+                                // set value
+                                setter.invoke(obj, value.toString());
+                            }
                         }
                     }
                     String beanId = resultMap.get(ID_NAME).toString();
@@ -124,6 +205,19 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
         }
 
+    }
+
+    /*
+     * recursively create index for the class in the dependency chain the index
+     * is equal to the maximum length of the dependency chain
+     */
+    private int findIndex(Class<?> clazz, Map<Class<?>, List<Class<?>>> depMap) {
+        List<Class<?>> deps = depMap.get(clazz);
+        int maxIndex = 0;
+        for (Class<?> dep : deps) {
+            maxIndex = Math.max(findIndex(dep, depMap), maxIndex);
+        }
+        return maxIndex + 1;
     }
 
     /*
@@ -157,7 +251,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
     /*
      * execute results and return list of maps with results fieldName <-> value
      */
-    private List<Map<String, Object>> executeQuery(String endpoint, String queryString, Collection<String> fields) {
+    private List<Map<String, Object>> executeQuery(Class<?> clazz, String endpoint, String queryString, Collection<String> fields) {
 
         List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
 
@@ -168,15 +262,61 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
             QuerySolution result = results.next();
             Map<String, Object> resultMap = new HashMap<String, Object>();
             for (String field : fields) {
-                Literal literalValue = result.getLiteral(field);
-                resultMap.put(field, literalValue.getValue());
+                if (result.get(field) == null) {
+                    continue;
+                }
+                if (result.get(field).isLiteral()) {
+                    // if result is literal then set value
+                    Literal literal = result.getLiteral(field);
+                    resultMap.put(field, literal.getValue());
+                } else if (result.get(field).isResource() && !field.equals(ID_NAME)) {
+                    // if result is a resource => try to get its value from the
+                    // db of already persisted objects
+                    // the dependency resolution should ensure that the object
+                    // is already persisted
+                    Resource resource = null;
+                    try {
+                        resource = result.getResource(field);
+                    } catch (NullPointerException err) {
+                    }
+                    try {
+                        if (resource != null) {
+                            resultMap.put(field, findDbValue(clazz, field, resource.getURI()));
+                        }
+                    } catch (Exception err) {
+                        logger.error("Error looking up id in the graphDB", err);
+                    }
+                }
             }
+            // set unique id
             Resource id = result.getResource(ID_NAME);
             resultMap.put(ID_NAME, id.getURI());
             resultList.add(resultMap);
         }
         qexec.close();
         return resultList;
+    }
+
+    /*
+     * look up a persisted value by ID.
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends GraphBacked<?>> T findDbValue(Class<?> clazz, String fieldName, String id) throws SecurityException,
+            NoSuchFieldException {
+        // get the type (class) of the field
+        Class<T> type = (Class<T>) clazz.getDeclaredField(fieldName).getType();
+        Field idField = null;
+        // find the ID field name of the related class
+        for (Field field : type.getDeclaredFields()) {
+            if (field.isAnnotationPresent(LODId.class)) {
+                idField = field;
+                break;
+            }
+        }
+        // create a repository for the lookup
+        GraphRepository<T> repo = this.graphFactory.createGraphRepository(type);
+        // return the lookup
+        return repo.findByPropertyValue(idField.getName(), id);
     }
 
     /*
@@ -226,6 +366,25 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    @SuppressWarnings("rawtypes")
+    class ValueComparator implements Comparator {
+
+        @SuppressWarnings("rawtypes")
+        Map base;
+
+        public ValueComparator(Map base) {
+            this.base = base;
+        }
+
+        public int compare(Object a, Object b) {
+            if ((Integer) base.get(a) >= (Integer) base.get(b)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
     }
 
 }
