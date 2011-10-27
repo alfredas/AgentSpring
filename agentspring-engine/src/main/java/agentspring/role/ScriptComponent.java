@@ -26,6 +26,4 @@ public @interface ScriptComponent {
 
     String after() default "";
 
-    boolean enabled() default true;
-
 }

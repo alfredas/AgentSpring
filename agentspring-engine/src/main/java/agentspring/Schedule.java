@@ -5,7 +5,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,18 +26,17 @@ public class Schedule {
         @Override
         public void run() {
             while (Schedule.this.state != EngineState.STOPPING) {
-            	logger.info("SCHEDULE:");
-            	for (RoleAgent roleAgent : roleList) {
-            		logger.info("role {}", roleAgent.getName());
-            	}
+                logger.info("SCHEDULE:");
+                for (RoleAgent roleAgent : roleList) {
+                    logger.info("role {}", roleAgent.getName());
+                }
                 for (RoleAgent roleAgent : roleList) {
                     Role<? extends Agent> role = roleAgent.getRole();
                     Agent agent = roleAgent.getAgent();
                     long start = roleAgent.getStart();
                     long end = roleAgent.getEnd();
                     long timeStep = roleAgent.getTimeStep();
-                    if (start <= currentTick && (end > currentTick || end == 0)
-                            && (currentTick % timeStep == 0)) {
+                    if (start <= currentTick && (end > currentTick || end == 0) && (currentTick % timeStep == 0)) {
                         if (agent != null) {
                             // agent roles
                             agent.act(role);
@@ -82,18 +80,16 @@ public class Schedule {
     }
 
     public void start() {
-        if (this.state == EngineState.STOPPED
-                || this.state == EngineState.CRASHED) {
+        if (this.state == EngineState.STOPPED || this.state == EngineState.CRASHED) {
             this.state = EngineState.RUNNING;
             this.runner = new Runner();
-            this.runner
-                    .setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                        @Override
-                        public void uncaughtException(Thread t, Throwable e) {
-                            Schedule.this.state = EngineState.CRASHED;
-                            e.printStackTrace();
-                        }
-                    });
+            this.runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    Schedule.this.state = EngineState.CRASHED;
+                    e.printStackTrace();
+                }
+            });
             runner.start();
         }
     }
@@ -141,76 +137,7 @@ public class Schedule {
 
     public void addRole(String name, Role<? extends Agent> role, Agent agent) {
         RoleAgent roleAgent = new RoleAgent(name, role, agent);
-
-        boolean first = roleAgent.isFirst();
-        boolean last = roleAgent.isLast();
-        String after = roleAgent.getAfter();
-
-        if (first) {
-            roleList.add(0, roleAgent);
-        } else if (last) {
-            roleList.add(roleList.size(), roleAgent);
-        } else if (after != "") {
-        	int afterIndex = findRole(after);
-        	if (afterIndex >= 0) {
-        		afterIndex++;
-        		if (afterIndex >= roleList.size()) {
-        			roleList.add(roleAgent);
-        		} else {
-        			roleList.add(afterIndex, roleAgent);
-        		}
-        	} else {
-        		int size = roleList.size();
-                boolean isLastRole = true;
-                while (size > 0 && isLastRole) {
-                    RoleAgent lastRole = roleList.get(size - 1);
-                    isLastRole = lastRole.isLast();
-                    if (isLastRole)
-                        size--;
-                }
-                roleList.add(size, roleAgent);
-        	}
-        } else {
-            int position = findRoleAfterMe(name);
-            if (position >= 0) {
-                roleList.add(position, roleAgent);
-            } else {
-                int size = roleList.size();
-                boolean isLastRole = true;
-                while (size > 0 && isLastRole) {
-                    RoleAgent lastRole = roleList.get(size - 1);
-                    isLastRole = lastRole.isLast();
-                    if (isLastRole)
-                        size--;
-                }
-                roleList.add(size, roleAgent);
-            }
-        }
-        logger.info("Added role {} at {}", name, roleList.indexOf(roleAgent));
-    }
-
-    private int findRole(String name) {
-        int i = 0;
-        int index = -1;
-        for (RoleAgent ba : roleList) {
-            String n = ba.getName();
-            if (n != null && n.equals(name)) {
-            	index = i;
-            }
-            i++;
-        }
-        return index;
-    }
-
-    private int findRoleAfterMe(String name) {
-    	int index = Integer.MAX_VALUE;
-        for (RoleAgent ba : roleList) {
-            String after = ba.getAfter();
-            if (after != "" && after.equals(name)) {
-                index = Math.min(index, roleList.indexOf(ba));
-            }
-        }
-        return (index == Integer.MAX_VALUE) ? -1 : index;
+        roleList.add(roleAgent);
     }
 
     public long getCurrentTick() {
@@ -233,8 +160,7 @@ public class Schedule {
             this.name = name;
             this.agent = agent;
             this.role = role;
-            ScriptComponent annotation = role.getClass().getAnnotation(
-                    ScriptComponent.class);
+            ScriptComponent annotation = role.getClass().getAnnotation(ScriptComponent.class);
             this.first = annotation.first();
             this.last = annotation.last();
             this.after = annotation.after();

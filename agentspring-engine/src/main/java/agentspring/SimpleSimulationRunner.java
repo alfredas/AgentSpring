@@ -2,11 +2,15 @@ package agentspring;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -21,31 +25,43 @@ import agentspring.role.ScriptComponent;
 @Component
 public class SimpleSimulationRunner implements Simulation {
 
-    static Logger logger = Logger.getLogger(SimpleSimulationRunner.class);
+    static Logger logger = LoggerFactory.getLogger(SimpleSimulationRunner.class);
 
     private ApplicationContext applicationContext;
 
     @Autowired
     DirectGraphRepositoryFactory graphRepositoryFactory;
 
-    // @Autowired
-    // private GenericRepository genericRepository;
     @SuppressWarnings("unchecked")
     private void buildSchedule() {
 
-        // get scheduled roles ...
-        Map<String, Object> roleMap = getApplicationContext().getBeansWithAnnotation(ScriptComponent.class);
+        // clear shedule
         Schedule.getSchedule().clear();
 
-        // ... and add them to the schedule
-        for (Object obj : roleMap.values()) {
+        // get scheduled roles ...
+        Map<String, Object> map = getApplicationContext().getBeansWithAnnotation(ScriptComponent.class);
+        List<Role<? extends AbstractAgent>> roleList = new ArrayList<Role<? extends AbstractAgent>>();
+        for (Object obj : map.values()) {
             Role<? extends AbstractAgent> role = (Role<? extends AbstractAgent>) obj;
-            ScriptComponent annotation = role.getClass().getAnnotation(ScriptComponent.class);
-
-            if (!annotation.enabled()) {
-                continue;
+            roleList.add(role);
+        }
+        // find their index
+        Map<Role<? extends AbstractAgent>, Integer> roleIndexMap = new HashMap<Role<? extends AbstractAgent>, Integer>();
+        for (Role<? extends AbstractAgent> role : roleList) {
+            if (!roleIndexMap.containsKey(role)) {
+                roleIndexMap.put(role, findRoleIndex(role, roleList));
             }
+        }
 
+        // create comparator based on index values
+        ValueComparator comparator = new ValueComparator(roleIndexMap);
+        // sort by value using treemap
+        TreeMap<Role<? extends AbstractAgent>, Integer> sortedIdexMap = new TreeMap(comparator);
+        sortedIdexMap.putAll(roleIndexMap);
+
+        // ... and add them to the schedule
+        for (Role<? extends AbstractAgent> role : sortedIdexMap.keySet()) {
+            ScriptComponent annotation = role.getClass().getAnnotation(ScriptComponent.class);
             String roleName = annotation.name().equals("") ? role.getClass().getSimpleName() : annotation.name();
             Class<? extends AbstractAgent> agentClass = role.agentClass();
             String agentName = agentClass.getSimpleName();
@@ -54,8 +70,7 @@ public class SimpleSimulationRunner implements Simulation {
 
             try {
                 if (!agentClass.isInterface()) {
-                    GraphRepository<? extends AbstractAgent> agentRepository = graphRepositoryFactory
-                            .createGraphRepository(agentClass);
+                    GraphRepository<? extends AbstractAgent> agentRepository = graphRepositoryFactory.createGraphRepository(agentClass);
                     List<? extends AbstractAgent> agents = Utils.asList(agentRepository.findAll());
                     Collections.shuffle(agents, new Random());
                     // add role for every agent in the store
@@ -70,6 +85,27 @@ public class SimpleSimulationRunner implements Simulation {
                 logger.error("Error adding role", e);
             }
         }
+    }
+
+    private int findRoleIndex(Role<? extends AbstractAgent> role, List<Role<? extends AbstractAgent>> roleList) {
+        ScriptComponent annotation = role.getClass().getAnnotation(ScriptComponent.class);
+        if (annotation.first()) {
+            return 0;
+        }
+        if (annotation.last()) {
+            return roleList.size() - 1;
+        }
+        if (!annotation.after().equals("")) {
+            String after = annotation.after();
+            for (Role<? extends AbstractAgent> r : roleList) {
+                ScriptComponent a = r.getClass().getAnnotation(ScriptComponent.class);
+                String afterName = a.name().equals("") ? r.getClass().getSimpleName() : a.name();
+                if (afterName.equals(after)) {
+                    return findRoleIndex(r, roleList) + 1;
+                }
+            }
+        }
+        return 0;
     }
 
     @Override
@@ -153,6 +189,25 @@ public class SimpleSimulationRunner implements Simulation {
             return list;
         }
 
+    }
+
+    @SuppressWarnings("rawtypes")
+    class ValueComparator implements Comparator {
+
+        @SuppressWarnings("rawtypes")
+        Map base;
+
+        public ValueComparator(Map base) {
+            this.base = base;
+        }
+
+        public int compare(Object a, Object b) {
+            if ((Integer) base.get(a) >= (Integer) base.get(b)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
     }
 
 }
