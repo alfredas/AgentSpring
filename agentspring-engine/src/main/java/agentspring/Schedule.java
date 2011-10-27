@@ -27,7 +27,10 @@ public class Schedule {
         @Override
         public void run() {
             while (Schedule.this.state != EngineState.STOPPING) {
-            	
+            	logger.info("SCHEDULE:");
+            	for (RoleAgent roleAgent : roleList) {
+            		logger.info("role {}", roleAgent.getName());
+            	}
                 for (RoleAgent roleAgent : roleList) {
                     Role<? extends Agent> role = roleAgent.getRole();
                     Agent agent = roleAgent.getAgent();
@@ -157,7 +160,15 @@ public class Schedule {
         			roleList.add(afterIndex, roleAgent);
         		}
         	} else {
-        		roleList.add(roleAgent);
+        		int size = roleList.size();
+                boolean isLastRole = true;
+                while (size > 0 && isLastRole) {
+                    RoleAgent lastRole = roleList.get(size - 1);
+                    isLastRole = lastRole.isLast();
+                    if (isLastRole)
+                        size--;
+                }
+                roleList.add(size, roleAgent);
         	}
         } else {
             int position = findRoleAfterMe(name);
@@ -175,6 +186,7 @@ public class Schedule {
                 roleList.add(size, roleAgent);
             }
         }
+        logger.info("Added role {} at {}", name, roleList.indexOf(roleAgent));
     }
 
     private int findRole(String name) {
