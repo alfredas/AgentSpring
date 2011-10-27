@@ -27,6 +27,7 @@ public class Schedule {
         @Override
         public void run() {
             while (Schedule.this.state != EngineState.STOPPING) {
+            	
                 for (RoleAgent roleAgent : roleList) {
                     Role<? extends Agent> role = roleAgent.getRole();
                     Agent agent = roleAgent.getAgent();
@@ -146,8 +147,18 @@ public class Schedule {
             roleList.add(0, roleAgent);
         } else if (last) {
             roleList.add(roleList.size(), roleAgent);
-        } else if (after != "" && findRole(after) >= 0) {
-            roleList.add(findRole(after) + 1, roleAgent);
+        } else if (after != "") {
+        	int afterIndex = findRole(after);
+        	if (afterIndex >= 0) {
+        		afterIndex++;
+        		if (afterIndex >= roleList.size()) {
+        			roleList.add(roleAgent);
+        		} else {
+        			roleList.add(afterIndex, roleAgent);
+        		}
+        	} else {
+        		roleList.add(roleAgent);
+        	}
         } else {
             int position = findRoleAfterMe(name);
             if (position >= 0) {
@@ -164,29 +175,30 @@ public class Schedule {
                 roleList.add(size, roleAgent);
             }
         }
-
     }
 
     private int findRole(String name) {
         int i = 0;
+        int index = -1;
         for (RoleAgent ba : roleList) {
             String n = ba.getName();
             if (n != null && n.equals(name)) {
-                return i;
+            	index = i;
             }
             i++;
         }
-        return -1;
+        return index;
     }
 
     private int findRoleAfterMe(String name) {
+    	int index = Integer.MAX_VALUE;
         for (RoleAgent ba : roleList) {
             String after = ba.getAfter();
             if (after != "" && after.equals(name)) {
-                return roleList.indexOf(ba);
+                index = Math.min(index, roleList.indexOf(ba));
             }
         }
-        return -1;
+        return (index == Integer.MAX_VALUE) ? -1 : index;
     }
 
     public long getCurrentTick() {
