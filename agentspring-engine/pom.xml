@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <aspectj.version>1.6.12.M1</aspectj.version>
+        <aspectj.version>1.6.12</aspectj.version>
         <spring.version>3.0.5.RELEASE</spring.version>
         <data-graph.version>1.1.0.RELEASE</data-graph.version>
     </properties>
