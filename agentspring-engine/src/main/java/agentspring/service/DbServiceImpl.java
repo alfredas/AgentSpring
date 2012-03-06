@@ -33,6 +33,11 @@ import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 
+/** 
+ * Gremlin query execution backend.
+ * @author alfredas
+ *
+ */
 public class DbServiceImpl implements DbService {
 
     @SuppressWarnings("unused")

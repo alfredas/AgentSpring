@@ -23,6 +23,11 @@ import agentspring.service.DbServiceImpl;
 import agentspring.service.EngineServiceImpl;
 import flexjson.JSONSerializer;
 
+/**
+ * Runs the simulation in a headless mode.
+ * @author alfredas
+ *
+ */
 public class HPCService {
 
     private static final Logger logger = LoggerFactory.getLogger(Service.class);

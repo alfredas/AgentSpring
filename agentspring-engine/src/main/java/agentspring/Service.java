@@ -7,7 +7,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import agentspring.service.EngineServiceImpl;
 
 /**
- * Simulation service runner. This is the class that initiates the application
+ * Simulation service runner (GUI mode). This is the class that initiates the application
  * context and wires the engine and the model together.
  * 
  * @author alfredas
@@ -30,7 +30,7 @@ public class Service {
             // wait indefinitely
             Service service = new Service();
 
-            logger.warn("Open up your browser");
+            logger.warn("Start agentspring-face and open up your browser");
             synchronized (service) {
                 while (true) {
                     try {

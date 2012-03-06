@@ -14,6 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
+/**
+ * Scans the provided prefix for classes annotated with NodeEntity and saves their names and fullnames in a map
+ * @author alfredas
+ *
+ */
 public class NodeEntityHelper {
 
     String prefix;

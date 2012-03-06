@@ -10,10 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.test.jdbc.SimpleJdbcTestUtils;
 
+/**
+ * HSQL db wrapper to store model data-sources and visuals.
+ * @author alfredas
+ *
+ */
 public class HsqlDataSource extends BasicDataSource {
 
     private static final Logger logger = LoggerFactory.getLogger(HsqlDataSource.class);
@@ -47,7 +51,7 @@ public class HsqlDataSource extends BasicDataSource {
      */
     @Override
     public void close() {
-        JdbcTemplate template = new JdbcTemplate(this);
+        SimpleJdbcTemplate template = new SimpleJdbcTemplate(this);
         logger.info("Shutting down HSQL DB");
         template.update("SHUTDOWN");
         try {

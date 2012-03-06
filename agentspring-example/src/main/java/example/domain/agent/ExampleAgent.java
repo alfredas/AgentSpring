@@ -17,7 +17,9 @@ public class ExampleAgent extends AbstractAgent implements Agent {
     private Set<Stuff> myStuff;
     @SimulationParameter(label = "Agents Cash Balance", from = 1, to = 100)
     double cash;
-
+    
+    String name;
+    
     public double getCash() {
         return cash;
     }
@@ -33,5 +35,16 @@ public class ExampleAgent extends AbstractAgent implements Agent {
     public void setMyStuff(Set<Stuff> myStuff) {
         this.myStuff = myStuff;
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+   
 
 }

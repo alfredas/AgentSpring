@@ -22,15 +22,31 @@ public class ExampleRole extends AbstractRole<ExampleAgent> implements Role<Exam
 
     @Transactional
     public void act(ExampleAgent agent) {
-        logger.warn("I am {}", agent);
-
-        for (Stuff stuff : stuffRepository.findMyStuff(agent)) {
-            if (agent.getCash() > stuff.getPrice() && stuff.getPrice() < 0.5) {
-                agent.getMyStuff().add(stuff);
-                agent.setCash(agent.getCash() - stuff.getPrice());
-                agent.persist();
-                logger.warn("Just bought {}", stuff.getLabel());
+        logger.warn("I am {}", agent.getName());
+        
+        long stuffCount = stuffRepository.count();
+        long randomStuffIndex = Math.min(Math.round(Math.random() * stuffCount), stuffCount-1);
+        
+        Stuff randomStuff = null;
+        int ix = 0;
+        for (Stuff stuff : stuffRepository.findAll()) {
+            if (ix == randomStuffIndex) {
+                randomStuff = stuff;
+                break;
             }
+            ix++;
         }
+        
+        if (agent.getCash() > randomStuff.getPrice()) {
+            agent.getMyStuff().add(randomStuff);
+            agent.setCash(agent.getCash() - randomStuff.getPrice());
+            agent.persist();
+            logger.warn("Just bought {}", randomStuff.getName());
+        }
+        String stuffStr = "";
+        for (Stuff stuff : stuffRepository.findMyStuff(agent)) {
+            stuffStr += stuff.getName() + " ";
+        }
+        logger.warn("Now I've got {}", stuffStr);
     }
 }

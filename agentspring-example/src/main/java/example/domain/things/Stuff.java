@@ -9,7 +9,7 @@ public class Stuff {
     @Indexed
     double price;
     // @Indexed
-    String label;
+    String name;
 
     public double getPrice() {
         return price;
@@ -19,12 +19,12 @@ public class Stuff {
         this.price = price;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

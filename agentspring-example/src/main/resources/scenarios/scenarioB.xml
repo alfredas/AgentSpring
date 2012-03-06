@@ -8,14 +8,14 @@
   <bean class="agentspring.graphdb.PersistingBeanPostProcessor"/>
 
   <!--  Agents -->
-  <bean id="winter" class="example.domain.agent.ExampleAgent" p:label="Winter" p:cash="20"/>
-  <bean id="summer" class="example.domain.agent.ExampleAgent" p:label="Summer" p:cash="30"/>
-  <bean id="autumn" class="example.domain.agent.ExampleAgent" p:label="Autumn" p:cash="100"/>
-  <bean id="spring" class="example.domain.agent.ExampleAgent" p:label="Spring" p:cash="30"/>
+  <bean id="winter" class="example.domain.agent.ExampleAgent" p:name="Winter" p:cash="20"/>
+  <bean id="summer" class="example.domain.agent.ExampleAgent" p:name="Summer" p:cash="30"/>
+  <bean id="autumn" class="example.domain.agent.ExampleAgent" p:name="Autumn" p:cash="100"/>
+  <bean id="spring" class="example.domain.agent.ExampleAgent" p:name="Spring" p:cash="30"/>
   
   <!--  Stuff  -->
-  <bean id="coal"       class="example.domain.things.Stuff" p:label="Coal" p:price="22"/>
-  <bean id="biomass"    class="example.domain.things.Stuff" p:label="Biomass" p:price="15"/>
-  <bean id="co2"        class="example.domain.things.Stuff" p:label="Co2" p:price="2"/>
+  <bean id="coal"       class="example.domain.things.Stuff" p:name="Coal" p:price="22"/>
+  <bean id="biomass"    class="example.domain.things.Stuff" p:name="Biomass" p:price="15"/>
+  <bean id="co2"        class="example.domain.things.Stuff" p:name="Co2" p:price="2"/>
   
 </beans>

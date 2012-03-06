@@ -1,5 +1,10 @@
 package agentspring.db;
 
+/** 
+ * DB schema
+ * @author alfredas
+ *
+ */
 public class Table {
     public static final String SOURCES = "agentspring_face.sources";
     public static final String VISUALS = "agentspring_face.visuals";

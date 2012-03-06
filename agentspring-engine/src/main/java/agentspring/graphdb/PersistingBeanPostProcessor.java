@@ -6,7 +6,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.transaction.annotation.Transactional;
-
+/**
+ * Persists the scenario beans in the database
+ * @author alfredas
+ *
+ */
 public class PersistingBeanPostProcessor implements BeanPostProcessor {
 
     static Logger logger = LoggerFactory.getLogger(PersistingBeanPostProcessor.class);

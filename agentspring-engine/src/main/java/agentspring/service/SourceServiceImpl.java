@@ -12,6 +12,11 @@ import agentspring.db.Table;
 import agentspring.facade.SourceService;
 import agentspring.facade.db.Source;
 
+/**
+ * CRUD for Soruce
+ * @author alfredas
+ *
+ */
 public class SourceServiceImpl implements SourceService {
 
     private JdbcTemplate jdbcTemplate;

@@ -7,6 +7,11 @@ import java.lang.annotation.Target;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Script annotation. Script is a top-level role that is added to simulation schedule given its parameter settings
+ * @author alfredas
+ *
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Component

@@ -13,7 +13,11 @@ import agentspring.facade.EngineEvent;
 import agentspring.facade.EngineState;
 import agentspring.role.Role;
 import agentspring.role.ScriptComponent;
-
+/**
+ * Simulation schedule
+ * @author alfredas
+ *
+ */
 public class Schedule {
     static Logger logger = LoggerFactory.getLogger(Schedule.class);
     private static final Schedule schedule = new Schedule();

@@ -37,6 +37,11 @@ import agentspring.simulation.SimulationParameter;
 
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 
+/**
+ * Engine service methods: start, stop, pause
+ * @author alfredas
+ *
+ */
 public class EngineServiceImpl implements EngineService, ApplicationContextAware {
 
     @Autowired

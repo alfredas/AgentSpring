@@ -54,8 +54,8 @@ public class ExecutionInspector {
         String name = "NOBODY";
         if (object != null) {
             AbstractAgent agent = (AbstractAgent) object;
-            if (agent.getLabel() != null) {
-                name = agent.getLabel();
+            if (agent.getName() != null) {
+                name = agent.getName();
             } else {
                 name = object.getClass().getSimpleName();
             }

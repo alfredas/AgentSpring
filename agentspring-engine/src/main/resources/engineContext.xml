@@ -44,7 +44,6 @@
   <!-- <datagraph:config graphDatabaseService="graphDbService"/>  -->
   
   <!-- Annotation and aspectj driven db transaction management -->
-  <!-- <tx:annotation-driven mode="proxy"/>  -->
   <tx:annotation-driven mode="aspectj" transaction-manager="transactionManager"/>
   
 	<!-- AspectJ driven execution inspector -->		

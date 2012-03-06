@@ -17,6 +17,11 @@ import agentspring.facade.db.Visual;
 import agentspring.facade.visual.ChartVisual;
 import agentspring.facade.visual.ScatterVisual;
 
+/**
+ * CRUD for Visual
+ * @author alfredas
+ *
+ */
 public class VisualServiceImpl implements VisualService {
 
     private JdbcTemplate jdbcTemplate;

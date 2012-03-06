@@ -5,6 +5,11 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Removes the db after the simulation has stopped.
+ * @author alfredas
+ *
+ */
 public class DbMaintainer {
 
     static Logger logger = LoggerFactory.getLogger(DbMaintainer.class);
@@ -14,7 +19,7 @@ public class DbMaintainer {
     public void cleanup() {
         if (getDb() != null && getDb() != "") {
             String dblocation = "";
-            // TODO Alfredas, make this better
+            // TODO: make this more robust
             if (!getDb().startsWith("/") && !getDb().contains(":")) {
                 setDb("/" + getDb());
                 dblocation = this.getClass().getResource("/").toString().replaceAll("/target/classes", getDb())

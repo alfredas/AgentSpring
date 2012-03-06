@@ -10,6 +10,12 @@ import org.springframework.context.ApplicationContext;
 
 import agentspring.simulation.Schedule;
 
+/**
+ * Abstract role provides utility methods for role implementation
+ * @author alfredas
+ *
+ * @param <T>
+ */
 public abstract class AbstractRole<T> {
 
     public Logger logger = LoggerFactory.getLogger(AbstractRole.class);
