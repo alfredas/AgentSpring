@@ -22,8 +22,9 @@ public class ExampleRole extends AbstractRole<ExampleAgent> implements Role<Exam
 
     @Transactional
     public void act(ExampleAgent agent) {
-        logger.warn("I am {}", agent.getLabel());
-        for (Stuff stuff : stuffRepository.findAll()) {
+        logger.warn("I am {}", agent);
+
+        for (Stuff stuff : stuffRepository.findMyStuff(agent)) {
             if (agent.getCash() > stuff.getPrice() && stuff.getPrice() < 0.5) {
                 agent.getMyStuff().add(stuff);
                 agent.setCash(agent.getCash() - stuff.getPrice());

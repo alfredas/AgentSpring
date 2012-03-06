@@ -6,11 +6,12 @@
     <artifactId>agentspring-face</artifactId>
     <name>agentspring-face</name>
     <packaging>war</packaging>
-    <version>1.0.0-BUILD-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
+    
     <properties>
         <java-version>1.6</java-version>
-        <spring.version>3.0.4.RELEASE</spring.version>
-        <org.aspectj-version>1.6.9</org.aspectj-version>
+         <spring.version>3.0.7.RELEASE</spring.version>
+        <org.aspectj-version>1.6.12</org.aspectj-version>
         <org.slf4j-version>1.5.10</org.slf4j-version>
         <tomcat.manager.url>http://localhost:8080/manager/html/</tomcat.manager.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,13 +22,12 @@
         <dependency>
             <groupId>agentspring</groupId>
             <artifactId>agentspring-facade</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <!-- RMI bean implementation validation -->
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-annotation-processor
-            </artifactId>
+            <artifactId>hibernate-validator-annotation-processor</artifactId>
             <version>4.1.0.Final</version>
         </dependency>
         <!-- Jackson JSON deps -->
@@ -90,21 +90,6 @@
             <artifactId>spring-aspects</artifactId>
             <version>${spring.version}</version>
         </dependency>
-
-        <!-- HSQLDB -->
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>2.2.4</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>1.4</version>
-        </dependency>
-
 
         <!-- AspectJ -->
         <dependency>

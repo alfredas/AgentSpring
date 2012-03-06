@@ -15,22 +15,23 @@ import java.util.PropertyPermission;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.neo4j.support.GraphDatabaseContext;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
-import agentspring.Schedule;
 import agentspring.facade.DbService;
 import agentspring.facade.Filters;
+import agentspring.graphdb.NodeEntityHelper;
+import agentspring.simulation.Schedule;
 
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph;
 import com.tinkerpop.blueprints.pgm.Vertex;
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
-import com.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 
 public class DbServiceImpl implements DbService {
 
@@ -44,7 +45,7 @@ public class DbServiceImpl implements DbService {
     private AccessControlContext evalContext = null;
 
     @Autowired
-    GraphDatabaseContext graphDatabaseContext;
+    Neo4jTemplate template;
 
     Filters filters;
 
@@ -53,8 +54,7 @@ public class DbServiceImpl implements DbService {
 
     public DbServiceImpl() {
         Permissions perms = new Permissions();
-        // TODO: check why this is necessary
-        perms.add(new RuntimePermission("accessDeclaredMembers"));
+        perms.add(new RuntimePermission("accessDeclaredMembers.*"));
         perms.add(new PropertyPermission("line.separator", "read"));
         ProtectionDomain domain = new ProtectionDomain(new CodeSource(null, (Certificate[]) null), perms);
         evalContext = new AccessControlContext(new ProtectionDomain[] { domain });
@@ -63,17 +63,19 @@ public class DbServiceImpl implements DbService {
     @Override
     public List<Object> executeGremlinQueries(String nodeType, String gremlinQuery) throws ScriptException {
         ScriptEngine engine = getScriptEngine();
+
         List<Object> result = new ArrayList<Object>();
         if (nodeType == null) {
             result.add(this.executeQuery(gremlinQuery, null, engine));
         } else {
             List<Vertex> startNodes = new ArrayList<Vertex>();
-            engine.getBindings(ScriptContext.ENGINE_SCOPE).put("nodes", startNodes);
-            engine.eval("g.idx('__types__')[[className:'" + nodeEntityHelper.getNodeEntityMap().get(nodeType) + "']] >> nodes");
+            startNodes = (List<Vertex>) engine.eval("g.idx('__types__')[[className:'" + nodeEntityHelper.getNodeEntityMap().get(nodeType)
+                    + "']].toList()");
             for (Vertex v : startNodes) {
                 result.add(this.executeQuery(gremlinQuery, v, engine));
             }
         }
+
         return result;
     }
 
@@ -135,7 +137,7 @@ public class DbServiceImpl implements DbService {
             }
         }, evalContext);
         if (exception != null) {
-            throw new ScriptException(exception.getMessage());
+            throw new ScriptException("from doPriv: " + exception.getMessage());
         }
 
         if (result instanceof Iterable<?>) {
@@ -150,13 +152,13 @@ public class DbServiceImpl implements DbService {
     }
 
     private ScriptEngine getScriptEngine() {
-        ScriptEngine engine = new GremlinScriptEngine();
-        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("g", new Neo4jGraph(this.graphDatabaseContext.getGraphDatabaseService()));
+        ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine engine = manager.getEngineByName("gremlin-groovy");
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("g", new Neo4jGraph(this.template.getGraphDatabaseService()));
         filters.init();
-        Nodes n = new Nodes();
-        n.init(engine);
+        Nodes n = new Nodes(engine);
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("f", filters);
-        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("nodes", n);
+        engine.getBindings(ScriptContext.ENGINE_SCOPE).put("n", n);
         engine.getBindings(ScriptContext.ENGINE_SCOPE).put("tick", Schedule.getSchedule().getCurrentTick());
         return engine;
     }
@@ -177,15 +179,13 @@ public class DbServiceImpl implements DbService {
     class Nodes {
         ScriptEngine engine;
 
-        public void init(ScriptEngine engine) {
+        public Nodes(ScriptEngine engine) {
             this.engine = engine;
         }
 
         public List<Vertex> getNodes(String type) throws ScriptException {
-            List<Vertex> startNodes = new ArrayList<Vertex>();
-            this.engine.getBindings(ScriptContext.ENGINE_SCOPE).put("nodes", startNodes);
-            this.engine.eval("g.idx('__types__')[[className:'" + nodeEntityHelper.getNodeEntityMap().get(type) + "']] >> nodes");
-            return startNodes;
+            return (List<Vertex>) engine.eval("g.idx('__types__')[[className:'" + nodeEntityHelper.getNodeEntityMap().get(type)
+                    + "']].toList()");
         }
     }
 

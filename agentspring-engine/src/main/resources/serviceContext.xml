@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="engineService" class="agentspring.service.EngineServiceImpl"/>
+	<bean id="dbService" class="agentspring.service.DbServiceImpl">
+		<property name="filters" ref="dbFilters"/>
+	</bean>
+	<bean id="sourceService" class="agentspring.service.SourceServiceImpl"/>
+	<bean id="visualService" class="agentspring.service.VisualServiceImpl"/>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="dbRmi">
+	    <property name="serviceName" value="DbService" />
+	    <property name="service" ref="dbService" />
+	    <property name="serviceInterface" value="agentspring.facade.DbService" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="engineRmi">
+	  <property name="serviceName" value="EngineService" />
+	  <property name="service" ref="engineService" />
+	  <property name="serviceInterface"  value="agentspring.facade.EngineService" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="sourceRmi">
+	  <property name="serviceName" value="SourceService" />
+	  <property name="service" ref="sourceService" />
+	  <property name="serviceInterface"  value="agentspring.facade.SourceService" />
+	</bean>
+	
+	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" id="visualRmi">
+	  <property name="serviceName" value="VisualService" />
+	  <property name="service" ref="visualService" />
+	  <property name="serviceInterface"  value="agentspring.facade.VisualService" />
+	</bean>
+	
+	<bean id="dataSource" class="agentspring.db.HsqlDataSource"
+        destroy-method="close" init-method="setup">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:facedb" />
+        <property name="schema" value="AGENTSPRING_FACE"/>
+        <property name="username" value="sa" />
+        <property name="password" value="" />
+        <property name="schemaLocation" value="classpath:sql/schema.sql" />
+        <property name="dataLocation" value="classpath:sql/data.sql" /> 
+    </bean>
+
+</beans>

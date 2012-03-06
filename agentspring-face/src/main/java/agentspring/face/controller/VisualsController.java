@@ -2,7 +2,6 @@ package agentspring.face.controller;
 
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +12,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.util.HtmlUtils;
 
+import agentspring.facade.VisualService;
+import agentspring.facade.db.Visual;
+import agentspring.facade.visual.ChartVisual;
+import agentspring.facade.visual.ScatterVisual;
 import agentspring.face.JsonResponse;
-import agentspring.face.model.dao.VisualDAO;
-import agentspring.face.model.visual.ChartVisual;
-import agentspring.face.model.visual.ScatterVisual;
-import agentspring.face.model.visual.Visual;
 
 /**
  * Visuals CRUD
@@ -29,13 +28,12 @@ public class VisualsController {
     private static final String VIEW = "visuals";
 
     @Autowired
-    private VisualDAO visualDao;
+    private VisualService visualService;
 
     @RequestMapping(value = "/new", method = RequestMethod.GET)
     public ModelAndView create() {
         ModelAndView response = new ModelAndView(VIEW);
-        response.addObject("data_source", new ChartVisual(null, null, null,
-                null));
+        response.addObject("data_source", new ChartVisual(null, null, null, null));
         return response;
     }
 
@@ -43,7 +41,7 @@ public class VisualsController {
     @ResponseBody
     public JsonResponse list() {
         JsonResponse response = new JsonResponse(true);
-        List<Visual> visuals = visualDao.listFullVisuals();
+        List<Visual> visuals = visualService.listFullVisuals();
         response.put("visuals", visuals);
         return response;
     }
@@ -51,17 +49,14 @@ public class VisualsController {
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public ModelAndView edit(@RequestParam("id") Integer id) {
         ModelAndView response = new ModelAndView(VIEW);
-        response.addObject("visual", this.visualDao.getVisual(id));
+        response.addObject("visual", this.visualService.getVisual(id));
         return response;
     }
 
     @RequestMapping(value = "/save/chart", method = RequestMethod.POST)
     @ResponseBody
-    public JsonResponse save(@RequestParam("id") Integer id,
-            @RequestParam("title") String title,
-            @RequestParam("sources") int[] sources,
-            @RequestParam("type") String type,
-            @RequestParam("yaxis") String yaxis) {
+    public JsonResponse save(@RequestParam("id") Integer id, @RequestParam("title") String title, @RequestParam("sources") int[] sources,
+            @RequestParam("type") String type, @RequestParam("yaxis") String yaxis) {
         title = HtmlUtils.htmlEscape(title.trim());
         type = HtmlUtils.htmlEscape(type.trim());
         yaxis = HtmlUtils.htmlEscape(yaxis.trim());
@@ -77,16 +72,14 @@ public class VisualsController {
             return response;
         }
         ChartVisual visual = new ChartVisual(id, title, sources, type, yaxis);
-        int newId = this.visualDao.saveChartVisual(visual);
+        int newId = this.visualService.saveChartVisual(visual);
         response.put("id", newId);
         return response;
     }
 
     @RequestMapping(value = "/save/scatter", method = RequestMethod.POST)
     @ResponseBody
-    public JsonResponse save(@RequestParam("id") Integer id,
-            @RequestParam("title") String title,
-            @RequestParam("sources") int[] sources,
+    public JsonResponse save(@RequestParam("id") Integer id, @RequestParam("title") String title, @RequestParam("sources") int[] sources,
             @RequestParam("yaxis") String yaxis) {
         title = HtmlUtils.htmlEscape(title.trim());
         yaxis = HtmlUtils.htmlEscape(yaxis.trim());
@@ -100,7 +93,7 @@ public class VisualsController {
             return response;
         }
         ScatterVisual visual = new ScatterVisual(id, title, sources, yaxis);
-        int newId = this.visualDao.saveScatterVisual(visual);
+        int newId = this.visualService.saveScatterVisual(visual);
         response.put("id", newId);
         return response;
     }
@@ -108,7 +101,7 @@ public class VisualsController {
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
     public RedirectView delete(@RequestParam("id") Integer id) {
         RedirectView response = new RedirectView("/visuals/new", true);
-        this.visualDao.delete(id);
+        this.visualService.delete(id);
         return response;
     }
 }

@@ -1,49 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-                        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
-                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean id="engineService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean"
-        lazy-init="true">
-        <property name="serviceUrl" value="rmi://localhost:1099/EngineService" />
-        <property name="serviceInterface"
-            value="agentspring.facade.EngineService" />
-        <property name="refreshStubOnConnectFailure" value="true" />
-    </bean>
-
-    <bean id="dbService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean"
-        lazy-init="true">
-        <property name="serviceUrl" value="rmi://localhost:1099/DbService" />
-        <property name="serviceInterface"
-            value="agentspring.facade.DbService" />
-        <property name="refreshStubOnConnectFailure" value="true" />
-    </bean>
-
-    <!-- <jdbc:embedded-database id="dataSource" type="HSQL"> <jdbc:script 
-        location="classpath:sql/schema.sql" /> <jdbc:script location="classpath:sql/data.sql" 
-        /> </jdbc:embedded-database> -->
-
-    <bean id="dataSource" class="agentspring.face.HsqlDataSource"
-        destroy-method="close" init-method="setup">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:${user.home}/.facedb/facedb" />
-        <property name="schema" value="AGENTSPRING_FACE"/>
-        <property name="username" value="sa" />
-        <property name="password" value="" />
-        <property name="schemaLocation" value="classpath:sql/schema.sql" />
-        <property name="dataLocation" value="classpath:sql/data.sql" />
-    </bean>
-
-    <context:component-scan base-package="agentspring.face.model.dao"></context:component-scan>
-
-    <bean id="dbDataCache" class="agentspring.face.DbDataCache"
-        lazy-init="true">
-        <property name="sourceDao" ref="sourceDAO" />
-        <property name="dbService" ref="dbService" />
-        <property name="engineService" ref="engineService" />
-    </bean>
+	<bean id="engineService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean" lazy-init="true">
+	  <property name="serviceUrl" value="rmi://localhost:1099/EngineService" />
+	  <property name="serviceInterface" value="agentspring.facade.EngineService" />
+	  <property name="refreshStubOnConnectFailure" value="true" />
+	</bean>
+	
+	<bean id="dbService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean" lazy-init="true">
+	  <property name="serviceUrl" value="rmi://localhost:1099/DbService" />
+	  <property name="serviceInterface" value="agentspring.facade.DbService" />
+	  <property name="refreshStubOnConnectFailure" value="true" />
+	</bean>
+	
+	<bean id="sourceService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean" lazy-init="true">
+	  <property name="serviceUrl" value="rmi://localhost:1099/SourceService" />
+	  <property name="serviceInterface" value="agentspring.facade.SourceService" />
+	  <property name="refreshStubOnConnectFailure" value="true" />
+	</bean>
+	
+	<bean id="visualService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean" lazy-init="true">
+	  <property name="serviceUrl" value="rmi://localhost:1099/VisualService" />
+	  <property name="serviceInterface" value="agentspring.facade.VisualService" />
+	  <property name="refreshStubOnConnectFailure" value="true" />
+	</bean>
+	
+	<bean id="dbDataCache" class="agentspring.face.DbDataCache" lazy-init="true">
+	  <property name="sourceService" ref="sourceService" />
+	  <property name="dbService" ref="dbService" />
+	  <property name="engineService" ref="engineService" />
+	</bean>
 
 </beans>

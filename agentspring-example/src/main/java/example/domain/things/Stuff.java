@@ -8,7 +8,7 @@ public class Stuff {
 
     @Indexed
     double price;
-    @Indexed
+    // @Indexed
     String label;
 
     public double getPrice() {

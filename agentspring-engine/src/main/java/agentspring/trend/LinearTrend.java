@@ -3,7 +3,7 @@ package agentspring.trend;
 
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
-import agentspring.service.SimulationParameter;
+import agentspring.simulation.SimulationParameter;
 
 @NodeEntity
 public class LinearTrend extends AbstractTrend implements Trend {

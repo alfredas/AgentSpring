@@ -32,8 +32,7 @@ public class DbController {
 
     @RequestMapping(value = "/query", method = RequestMethod.GET)
     @ResponseBody
-    public JsonResponse query(@RequestParam(value = "start", required = false) String start,
-            @RequestParam("query") String query) {
+    public JsonResponse query(@RequestParam(value = "start", required = false) String start, @RequestParam("query") String query) {
         // logger.info("Executing gremlin query: " + query);
         JsonResponse response = new JsonResponse();
         try {
@@ -52,8 +51,7 @@ public class DbController {
 
     @RequestMapping(value = "/history", method = RequestMethod.GET)
     @ResponseBody
-    public List<TickJsonResponse> history(@RequestParam("data") Integer data,
-            @RequestParam(value = "from", required = false) Integer from,
+    public List<TickJsonResponse> history(@RequestParam("data") Integer data, @RequestParam(value = "from", required = false) Integer from,
             @RequestParam(value = "last", required = false) Boolean last) {
         List<TickJsonResponse> result = null;
         if (from != null) {
@@ -68,4 +66,5 @@ public class DbController {
         else
             return new ArrayList<TickJsonResponse>();
     }
+
 }

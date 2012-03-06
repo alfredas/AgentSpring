@@ -59,7 +59,8 @@ function update_status() {
                         text: "Engine is ready"
                 }));
             }
-
+            $('#splashscreen').hide();
+            $('#scenario').show();
             if (state == "STOPPED" || state == "CRASHED") {
                 enable_control($("#start"));
                 disable_control($('#pause'));
@@ -87,6 +88,8 @@ function update_status() {
                     class : 'status-offline',
                     text: 'Engine is offline'
             }));
+            $('#splashscreen').show();
+            $('#scenario').hide();
             $('#pause').hide();
             $("#start").hide();
             $('#stop').hide();

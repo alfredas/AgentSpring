@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import agentspring.facade.DbService;
 import agentspring.facade.EngineService;
+import agentspring.facade.SourceService;
+import agentspring.facade.db.Source;
 import agentspring.face.gremlin.GremlinQuery;
-import agentspring.face.model.Source;
-import agentspring.face.model.dao.SourceDAO;
 
 public class DbDataCache {
 
@@ -24,7 +24,7 @@ public class DbDataCache {
     private DbService dbService;
     private long tick = 0;
     private HashMap<Integer, List<TickJsonResponse>> cache = new HashMap<Integer, List<TickJsonResponse>>();
-    private SourceDAO sourceDao;
+    private SourceService sourceService;
 
     public void clear() {
         synchronized (this.cache) {
@@ -35,7 +35,7 @@ public class DbDataCache {
     public void update() {
         synchronized (this.cache) {
             this.tick = engineService.getCurrentTick();
-            for (Source source : this.sourceDao.listSources()) {
+            for (Source source : this.sourceService.listSources()) {
                 GremlinQuery query = new GremlinQuery(source);
                 TickJsonResponse result = new TickJsonResponse();
                 try {
@@ -107,7 +107,7 @@ public class DbDataCache {
         this.dbService = dbService;
     }
 
-    public void setSourceDao(SourceDAO sourceDao) {
-        this.sourceDao = sourceDao;
+    public void setSourceService(SourceService sourceService) {
+        this.sourceService = sourceService;
     }
 }

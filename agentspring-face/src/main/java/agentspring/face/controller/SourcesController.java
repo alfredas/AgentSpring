@@ -13,10 +13,10 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.HtmlUtils;
 
 import agentspring.facade.DbService;
+import agentspring.facade.SourceService;
+import agentspring.facade.VisualService;
+import agentspring.facade.db.Source;
 import agentspring.face.JsonResponse;
-import agentspring.face.model.Source;
-import agentspring.face.model.dao.SourceDAO;
-import agentspring.face.model.dao.VisualDAO;
 
 /**
  * Data sources CRUD
@@ -28,9 +28,9 @@ public class SourcesController {
     private static final String VIEW = "sources";
 
     @Autowired
-    private SourceDAO sourceDao;
+    private SourceService sourceService;
     @Autowired
-    private VisualDAO visualDao;
+    private VisualService visualService;
     @Autowired
     private DbService dbService;
 
@@ -51,7 +51,7 @@ public class SourcesController {
     @ResponseBody
     public JsonResponse list() {
         JsonResponse response = new JsonResponse(true);
-        List<Source> sources = sourceDao.listSources();
+        List<Source> sources = sourceService.listSources();
         response.put("sources", sources);
         return response;
     }
@@ -60,24 +60,22 @@ public class SourcesController {
     @ResponseBody
     public JsonResponse visual(@RequestParam("id") int id) {
         JsonResponse response = new JsonResponse(true);
-        response.put("visuals", visualDao.getVisualsForSource(id));
+        response.put("visuals", visualService.getVisualsForSource(id));
         return response;
     }
 
     @RequestMapping(value = "/edit", method = RequestMethod.GET)
     public ModelAndView edit(@RequestParam("id") int id) {
         ModelAndView response = new ModelAndView(VIEW);
-        response.addObject("data_source", this.sourceDao.getSource(id));
+        response.addObject("data_source", this.sourceService.getSource(id));
         this.setup(response);
         return response;
     }
 
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
-    public JsonResponse save(@RequestParam("id") Integer id,
-            @RequestParam("query") String query,
-            @RequestParam("start_node") String start_node,
-            @RequestParam("title") String title) {
+    public JsonResponse save(@RequestParam("id") Integer id, @RequestParam("query") String query,
+            @RequestParam("start_node") String start_node, @RequestParam("title") String title) {
         query = HtmlUtils.htmlEscape(query.trim());
         start_node = HtmlUtils.htmlEscape(start_node.trim());
         title = HtmlUtils.htmlEscape(title.trim());
@@ -93,8 +91,7 @@ public class SourcesController {
             response.setError(error);
             return response;
         }
-        int newId = this.sourceDao.saveSource(new Source(id, title, start_node,
-                query));
+        int newId = this.sourceService.saveSource(new Source(id, title, start_node, query));
         response.put("id", newId);
         return response;
     }
@@ -104,7 +101,7 @@ public class SourcesController {
     public JsonResponse delete(@RequestParam("id") int id) {
         JsonResponse response = new JsonResponse(true);
         try {
-            this.sourceDao.delete(id);
+            this.sourceService.delete(id);
         } catch (DataIntegrityViolationException e) {
             response.setError("Could not delete source because there are visuals using it");
         }

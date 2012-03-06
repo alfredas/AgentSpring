@@ -20,7 +20,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import agentspring.facade.EngineEvent;
 import agentspring.service.DbServiceImpl;
-import agentspring.service.EngineException;
 import agentspring.service.EngineServiceImpl;
 import flexjson.JSONSerializer;
 
@@ -37,18 +36,12 @@ public class HPCService {
 
     public HPCService() {
         // load spring context
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("engineContext.xml",
-                "hpcServiceContext.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("engineContext.xml", "hpcServiceContext.xml");
 
         // create engine
         engine = context.getBean(EngineServiceImpl.class);
         try {
-            if (System.getProperty("scenario") != null) {
-                engine.init(System.getProperty("scenario"));
-            } else {
-                engine.init();
-            }
-
+            engine.init();
             // start engine
             engine.start();
 

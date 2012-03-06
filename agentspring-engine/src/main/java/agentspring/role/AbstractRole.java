@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
-import agentspring.Schedule;
+import agentspring.simulation.Schedule;
 
 public abstract class AbstractRole<T> {
 

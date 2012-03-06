@@ -5,7 +5,7 @@ import java.util.Map;
 public interface EngineService {
 
     // main engine controls
-	
+
     public void start();
 
     public void stop();
@@ -30,8 +30,7 @@ public interface EngineService {
 
     public Map<String, ConfigurableObject> getScenarioParameters();
 
-    public void setScenarioParameters(
-            Map<String, Map<String, ScenarioParameter>> parameters);
+    public void setScenarioParameters(Map<String, Map<String, ScenarioParameter>> parameters);
 
     // helper methods
 

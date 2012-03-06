@@ -1,3 +1,4 @@
+<div id="splashscreen"><span style="color: white; font-size: 40pt; font-family: verdana">Engine Off-line</span></div>
 <div class="controls">
     <div class="right">
         <img id="start" src="${root}/resources/img/controls/play.png"

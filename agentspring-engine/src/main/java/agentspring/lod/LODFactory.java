@@ -22,13 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.springframework.data.neo4j.core.GraphBacked;
-import org.springframework.data.neo4j.repository.DirectGraphRepositoryFactory;
+import org.springframework.data.neo4j.aspects.core.GraphBacked;
 import org.springframework.data.neo4j.repository.GraphRepository;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -45,21 +46,27 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
-    DirectGraphRepositoryFactory graphFactory;
-
     static Logger logger = LoggerFactory.getLogger(LODFactory.class);
 
     static String ID_NAME = "x_id";
 
+    @Autowired
+    Neo4jTemplate template;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (applicationContext.getParent() != null) {
-            graphFactory = (DirectGraphRepositoryFactory) applicationContext.getParent().getBean("directGraphRepositoryFactory");
+
+        // Alfredas: change
+        // if (applicationContext.getParent() != null) {
+        // graphFactory = (DirectGraphRepositoryFactory)
+        // applicationContext.getParent().getBean("directGraphRepositoryFactory");
+        // }
+        // if (graphFactory == null) {
+        // throw new Exception("directGraphRepositoryFactory not found");
+        // }
+        if (template != null) {
+            this.createObjects();
         }
-        if (graphFactory == null) {
-            throw new Exception("directGraphRepositoryFactory not found");
-        }
-        this.createObjects();
     }
 
     /*
@@ -306,7 +313,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
      * look up a persisted value by ID.
      */
     @SuppressWarnings("unchecked")
-    private <T extends GraphBacked<?>> T findDbValue(Class<?> clazz, String fieldName, String id) throws SecurityException,
+    private <T extends GraphBacked<?, ?>> T findDbValue(Class<?> clazz, String fieldName, String id) throws SecurityException,
             NoSuchFieldException {
         // get the type (class) of the field
         Class<T> type = (Class<T>) clazz.getDeclaredField(fieldName).getType();
@@ -319,7 +326,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
             }
         }
         // create a repository for the lookup
-        GraphRepository<T> repo = this.graphFactory.createGraphRepository(type);
+        GraphRepository<T> repo = this.template.repositoryFor(type);
         // return the lookup
         return repo.findByPropertyValue(idField.getName(), id);
     }

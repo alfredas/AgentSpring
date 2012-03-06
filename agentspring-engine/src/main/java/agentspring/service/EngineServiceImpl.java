@@ -1,6 +1,9 @@
 package agentspring.service;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,23 +15,25 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.neo4j.core.NodeBacked;
+import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.data.neo4j.fieldaccess.NodeDelegatingFieldAccessorFactory;
-import org.springframework.data.neo4j.support.GraphDatabaseContext;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.node.NodeEntityStateFactory;
 
-import agentspring.Simulation;
-import agentspring.SimulationListener;
+import agentspring.EngineException;
 import agentspring.facade.ConfigurableObject;
 import agentspring.facade.EngineEvent;
 import agentspring.facade.EngineService;
 import agentspring.facade.EngineState;
+import agentspring.facade.Scenario;
 import agentspring.facade.ScenarioParameter;
+import agentspring.simulation.Simulation;
+import agentspring.simulation.SimulationListener;
+import agentspring.simulation.SimulationParameter;
 
 import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 
@@ -38,7 +43,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
     private Simulation simulation;
 
     @Autowired
-    private GraphDatabaseContext graphDatabaseContext;
+    Neo4jTemplate template;
 
     ApplicationContext applicationContext;
 
@@ -51,43 +56,40 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
     private Neo4jGraph graph;
     private Object waiter = new Object();
     private ClassPathXmlApplicationContext context;
-    private List<String> scenarios;
-    private String currentScenario;
+    private List<Scenario> scenarios;
+    private Scenario currentScenario;
     private boolean scenarioLoaded = false;
     private HashMap<String, ConfigurableObject> scenarioParameters = new HashMap<String, ConfigurableObject>();
+    private static final String SCENARIO_FOLDER = "/scenarios";
 
     @SuppressWarnings("unchecked")
     public void init() throws EngineException {
-        try {
-            scenarios = (List<String>) applicationContext.getBean("scenarios");
-        } catch (NoSuchBeanDefinitionException err) {
-            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
-        } catch (BeansException err) {
-            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
-        }
+
+        this.scenarios = findScenarios();
 
         if (scenarios != null && scenarios.size() > 0) {
             init(scenarios.get(0));
         } else {
-            throw new EngineException("Scenarios not defined. Please define scenarios in a bean 'scenarios' of type List<String>");
+            throw new EngineException("Scenarios not found. Please put your scenario files in the src/main/java/scenarios folder.");
         }
     }
 
-    public void init(String scenario) throws EngineException {
+    public void init(Scenario scenario) throws EngineException {
         org.apache.log4j.Logger.getRootLogger().addAppender(new LogAppender());
         currentScenario = scenario;
         if (scenarios == null) {
-            scenarios = new ArrayList<String>();
+            scenarios = new ArrayList<Scenario>();
         }
         if (scenarios.indexOf(scenario) < 0) {
             scenarios.add(scenario);
         }
         this.simulation.listen(new SimulationListenerImpl());
-        this.graph = new Neo4jGraph(this.graphDatabaseContext.getGraphDatabaseService());
+        this.graph = new Neo4jGraph(this.template.getGraphDatabaseService());
         this.entityStateFactory = new NodeEntityStateFactory();
-        this.entityStateFactory.setGraphDatabaseContext(this.graphDatabaseContext);
-        this.entityStateFactory.setEntityManagerFactory(null);
-        this.entityStateFactory.setNodeDelegatingFieldAccessorFactory(new NodeDelegatingFieldAccessorFactory(this.graphDatabaseContext));
+        // Alfredas: Change
+        this.entityStateFactory.setTemplate(template);
+        // this.entityStateFactory.set
+        this.entityStateFactory.setNodeDelegatingFieldAccessorFactory(new NodeDelegatingFieldAccessorFactory(template));
         this.loadScenario(this.currentScenario);
     }
 
@@ -223,7 +225,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
 
     @Override
     public String getCurrentScenario() {
-        return this.currentScenario;
+        return this.currentScenario.getName();
     }
 
     @Override
@@ -233,23 +235,26 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
 
     @Override
     public String[] getScenarios() {
-        return this.scenarios.toArray(new String[0]);
+        String[] scenarioArray = new String[this.scenarios.size()];
+        for (int i = 0; i < scenarioArray.length; i++) {
+            scenarioArray[i] = this.scenarios.get(i).getName();
+        }
+        return scenarioArray;
     }
 
-    @Override
-    public synchronized void loadScenario(String scenario) {
+    private synchronized void loadScenario(Scenario scenario) {
         if (this.simulation.getState() != EngineState.STOPPED && this.simulation.getState() != EngineState.CRASHED)
             return;
 
         boolean found = false;
-        for (String scen : this.scenarios) {
+        for (Scenario scen : this.scenarios) {
             if (scenario.equals(scen)) {
                 found = true;
                 break;
             }
         }
         if (!found)
-            throw new RuntimeException("Scenario " + scenario + " does not exist");
+            throw new RuntimeException("Scenario " + scenario.getName() + " does not exist");
 
         if (this.context != null) {
             this.context.close();
@@ -259,10 +264,10 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         } catch (Exception err) {
             logger.error("Error clearing graph", err);
         }
-        String[] configs = {scenario};
+        String[] configs = { SCENARIO_FOLDER + "/" + scenario.getName() };
         this.context = new ClassPathXmlApplicationContext(configs, this.applicationContext);
 
-        if (!this.currentScenario.equals(scenario) || this.scenarioParameters.isEmpty()) {
+        if (!this.currentScenario.equals(found) || this.scenarioParameters.isEmpty()) {
             this.scenarioParameters.clear();
 
             String[] names = this.context.getBeanNamesForType(Object.class);
@@ -315,6 +320,19 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
 
         this.currentScenario = scenario;
         this.scenarioLoaded = true;
+    }
+
+    @Override
+    public synchronized void loadScenario(String scenarioName) {
+        Scenario scenario = null;
+        for (Scenario scen : this.scenarios) {
+            if (scenarioName.equals(scen.getName())) {
+                scenario = scen;
+                break;
+            }
+        }
+        if (scenario != null)
+            loadScenario(scenario);
     }
 
     @Override
@@ -374,8 +392,32 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         return string.substring(0, 1).toUpperCase() + string.substring(1, string.length());
     }
 
+    private List<Scenario> findScenarios() throws EngineException {
+        try {
+            URL url = this.getClass().getResource(SCENARIO_FOLDER);
+            File scenarioFolder = new File(url.toURI());
+            if (scenarioFolder.isDirectory()) {
+                File[] scenarios = scenarioFolder.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return (name.endsWith(".xml"));
+                    }
+                });
+                List<Scenario> sList = new ArrayList<Scenario>();
+                for (File sf : scenarios) {
+                    sList.add(new Scenario(sf.getName(), sf.getAbsolutePath()));
+                }
+                return sList;
+            }
+        } catch (Exception err) {
+            throw new EngineException("Scenarios folder not found. Please put your scenarios in a folder called scenarios.");
+        }
+        return null;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
 }

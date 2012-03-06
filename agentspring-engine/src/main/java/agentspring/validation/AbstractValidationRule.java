@@ -1,6 +1,6 @@
 package agentspring.validation;
 
-import agentspring.Schedule;
+import agentspring.simulation.Schedule;
 
 public abstract class AbstractValidationRule {
 

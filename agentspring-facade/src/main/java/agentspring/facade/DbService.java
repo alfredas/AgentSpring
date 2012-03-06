@@ -12,4 +12,5 @@ public interface DbService {
     public List<String> getStartNodes();
 
     public void setFilters(Filters filters);
+
 }

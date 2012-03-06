@@ -4,7 +4,7 @@ package agentspring.role;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import agentspring.Agent;
+import agentspring.agent.Agent;
 
 public interface Role<T extends Agent> extends ApplicationContextAware {
 

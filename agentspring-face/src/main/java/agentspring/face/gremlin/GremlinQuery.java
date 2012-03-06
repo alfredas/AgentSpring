@@ -2,8 +2,7 @@ package agentspring.face.gremlin;
 
 import org.springframework.web.util.HtmlUtils;
 
-import agentspring.face.model.Source;
-
+import agentspring.facade.db.Source;
 
 public class GremlinQuery extends AbstractGremlinQuery {
 
