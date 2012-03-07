@@ -22,7 +22,7 @@ mvn clean install
 == RUNNING ==
 cd agentspring-example/
 
-mvn exec:java -Pservice -Djava.security.policy=service.policy -Dparameters.file=parameters.properties 
+mvn exec:java
 
 open browser: http://localhost:8080/agentspring-face
 
