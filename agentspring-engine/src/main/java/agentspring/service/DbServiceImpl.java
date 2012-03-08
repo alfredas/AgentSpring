@@ -59,7 +59,7 @@ public class DbServiceImpl implements DbService {
 
     public DbServiceImpl() {
         Permissions perms = new Permissions();
-        perms.add(new RuntimePermission("accessDeclaredMembers.*"));
+        perms.add(new RuntimePermission("accessDeclaredMembers"));
         perms.add(new PropertyPermission("line.separator", "read"));
         ProtectionDomain domain = new ProtectionDomain(new CodeSource(null, (Certificate[]) null), perms);
         evalContext = new AccessControlContext(new ProtectionDomain[] { domain });
