@@ -4,7 +4,8 @@ function BasicChartOptions() {
         width : 500,
         animation : false,
         borderColor : '#ECF1EF',
-        borderWidth : 1
+        borderWidth : 1,
+        zoomType: 'xy'
     };
     this.plotOptions = {
         series : {
@@ -31,7 +32,7 @@ function BasicChartOptions() {
         title : {
             text : 'Euro'
         },
-        min : 0
+        min : null
     };
     this.exporting = {
         enabled : true
