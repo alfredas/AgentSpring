@@ -13,13 +13,15 @@ cd ../agentspring-face/
 
 mvn clean install
 
-mvn jetty:run
-
 cd ../agentspring-example/
 
 mvn clean install
 
 == RUNNING ==
+cd ../agentspring-face/
+
+mvn jetty:run
+
 cd agentspring-example/
 
 mvn exec:java
