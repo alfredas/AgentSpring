@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -30,6 +29,8 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 import org.springframework.data.neo4j.aspects.core.GraphBacked;
 import org.springframework.data.neo4j.repository.GraphRepository;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
+
+import agentspring.graphdb.NodeEntityHelper;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -42,30 +43,24 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class LODFactory implements InitializingBean, ApplicationContextAware {
 
-    String basepackage;
-
-    ApplicationContext applicationContext;
-
+    private ApplicationContext applicationContext;
+    private Neo4jTemplate template;
+    
     static Logger logger = LoggerFactory.getLogger(LODFactory.class);
-
     static String ID_NAME = "x_id";
 
-    @Autowired
-    Neo4jTemplate template;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
-        // Alfredas: change
-        // if (applicationContext.getParent() != null) {
-        // graphFactory = (DirectGraphRepositoryFactory)
-        // applicationContext.getParent().getBean("directGraphRepositoryFactory");
-        // }
-        // if (graphFactory == null) {
-        // throw new Exception("directGraphRepositoryFactory not found");
-        // }
+        // get prefix defined in NodeEntityHelper    	
+    	NodeEntityHelper helper = applicationContext.getParent().getBeansOfType(NodeEntityHelper.class).values().iterator().next();
+    	String prefix = helper.getPrefix();
+    	
+    	// get the Neo4J Template for finding stuff
+    	template = applicationContext.getParent().getBeansOfType(Neo4jTemplate.class).values().iterator().next();
+    	
         if (template != null) {
-            this.createObjects();
+            this.createObjects(prefix);
         }
     }
 
@@ -74,13 +69,13 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
      * annotated with LODProperty; construct queries based on those fields,
      * execute them and create class instances for each result.
      */
-    private void createObjects() {
+    private void createObjects(String prefix) {
         AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 
         // scan for classes annotated with LODType
         Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .filterInputsBy(new FilterBuilder.Include(FilterBuilder.prefix(this.getBasepackage())))
-                .setUrls(ClasspathHelper.getUrlsForPackagePrefix(this.getBasepackage()))
+                .filterInputsBy(new FilterBuilder.Include(FilterBuilder.prefix(prefix)))
+                .setUrls(ClasspathHelper.getUrlsForPackagePrefix(prefix))
                 .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner(), new ResourcesScanner()));
 
         Map<Class<?>, List<Class<?>>> depMap = new HashMap<Class<?>, List<Class<?>>>();
@@ -365,14 +360,6 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
             return float.class;
         }
         return complex;
-    }
-
-    public String getBasepackage() {
-        return basepackage;
-    }
-
-    public void setBasepackage(String basepackage) {
-        this.basepackage = basepackage;
     }
 
     @Override
