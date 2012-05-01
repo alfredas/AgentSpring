@@ -30,7 +30,7 @@ public class Service {
             // wait indefinitely
             Service service = new Service();
 
-            logger.warn("Start agentspring-face and open up your browser");
+            logger.warn("Default agentspring url http://localhost:8080/agentspring-face/");
             synchronized (service) {
                 while (true) {
                     try {
