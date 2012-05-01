@@ -21,6 +21,7 @@ function remove_visual() {
 function update_visual(visual_id) {
     var visual_data = visuals[visual_id];
     var visual = {};
+    if (visual_data != null) {
     if (visual_data.clazz == "chart") {
         visual = new Timechart(visual_data);
     } else if (visual_data.clazz == "scatter") {
@@ -31,6 +32,7 @@ function update_visual(visual_id) {
         visual.update();
     } else {
         visual.create();
+    }
     }
 }
 
