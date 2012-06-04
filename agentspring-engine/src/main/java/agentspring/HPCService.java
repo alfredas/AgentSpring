@@ -19,14 +19,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import agentspring.facade.EngineEvent;
+import agentspring.facade.EngineState;
 import agentspring.service.DbServiceImpl;
 import agentspring.service.EngineServiceImpl;
 import flexjson.JSONSerializer;
 
 /**
  * Runs the simulation in a headless mode.
+ * 
  * @author alfredas
- *
+ * 
  */
 public class HPCService {
 
@@ -38,6 +40,7 @@ public class HPCService {
     List<Query> queries;
     String runId;
     String resultsPath;
+    String scenarioFilename;
 
     public HPCService() {
         // load spring context
@@ -46,12 +49,13 @@ public class HPCService {
         // create engine
         engine = context.getBean(EngineServiceImpl.class);
         try {
-            engine.init();
-            // start engine
-            engine.start();
 
-            // create db
-            db = context.getBean(DbServiceImpl.class);
+            if (System.getProperty("scenario.file") != null) {
+                scenarioFilename = System.getProperty("scenario.file");
+                engine.init(scenarioFilename);
+            } else {
+                engine.init();
+            }
 
             // identify each run
             if (System.getProperty("run.id") != null) {
@@ -59,6 +63,14 @@ public class HPCService {
             } else {
                 runId = UUID.randomUUID().toString();
             }
+
+            logger.warn("Running " + engine.getCurrentScenario() + ", run.Id " + runId);
+
+            // start engine
+            engine.start();
+
+            // create db
+            db = context.getBean(DbServiceImpl.class);
 
             // where do we save results
             if (System.getProperty("results.path") != null) {
@@ -79,6 +91,7 @@ public class HPCService {
 
             // start listener
             listener.start();
+
         } catch (EngineException err) {
             logger.error(err.getMessage());
         }
@@ -100,11 +113,11 @@ public class HPCService {
         }
         String queryContents = getContents(new File(queryFile));
 
-        String[] vals = queryContents.split("',[ \t\n]*'");
+        String[] vals = queryContents.split("\",[ \t\n]*\"");
         for (int i = 0; i < vals.length; i += 3) {
-            String name = vals[i].replaceAll("^'", "");
-            String node = vals[i + 1];
-            String script = vals[i + 2].replaceAll("'$", "");
+            String name = vals[i].replaceAll("^\"", "");
+            String node = vals[i + 1].equals("") ? null : vals[i + 1];
+            String script = vals[i + 2].replaceAll("[\"\n,]*$", "");
             Query q = new Query(name, node, script);
             qs.add(q);
         }
@@ -138,6 +151,12 @@ public class HPCService {
                     // execute query
                     saveResults(runQueries());
                     engine.wake();
+                }
+                if (engine.getState() == EngineState.STOPPING) {
+                    engine.release();
+                    logger.warn("Stopping AgentSpring!");
+                    // TODO: Hack, find a better solution?
+                    System.exit(0);
                 }
             }
         }

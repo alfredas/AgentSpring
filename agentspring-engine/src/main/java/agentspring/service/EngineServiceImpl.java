@@ -39,8 +39,9 @@ import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 
 /**
  * Engine service methods: start, stop, pause
+ * 
  * @author alfredas
- *
+ * 
  */
 public class EngineServiceImpl implements EngineService, ApplicationContextAware {
 
@@ -77,6 +78,26 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         } else {
             throw new EngineException("Scenarios not found. Please put your scenario files in the src/main/java/scenarios folder.");
         }
+    }
+
+    public void init(String scenarioString) throws EngineException {
+
+        this.scenarios = findScenarios();
+
+        Scenario initScenario = null;
+
+        for (Scenario scenario : scenarios) {
+            if (scenarioString.equals(scenario.getName())) {
+                initScenario = scenario;
+            }
+        }
+
+        if (initScenario != null) {
+            init(initScenario);
+        } else {
+            throw new EngineException("Specified scenario not found. Please put your scenario files in the src/main/java/scenarios folder.");
+        }
+
     }
 
     public void init(Scenario scenario) throws EngineException {
