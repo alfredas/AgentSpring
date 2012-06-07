@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ public class HPCService {
     String runId;
     String resultsPath;
     String scenarioFilename;
+    private final String QUERY_PROP_FILE = "queries.properties";
 
     public HPCService() {
         // load spring context
@@ -54,6 +57,7 @@ public class HPCService {
                 scenarioFilename = System.getProperty("scenario.file");
                 engine.init(scenarioFilename);
             } else {
+                logger.warn("No scenario file found. Start with any scenario.");
                 engine.init();
             }
 
@@ -83,7 +87,12 @@ public class HPCService {
             if (System.getProperty("query.file") != null) {
                 queries = readQueries();
             } else {
-                queries = Collections.emptyList();
+                if (this.getClass().getClassLoader().getResource(QUERY_PROP_FILE) != null) {
+                    queries = readQueries();
+                } else {
+                    logger.warn("No queries given to the simulation.");
+                    queries = Collections.emptyList();
+                }
             }
 
             // create event listener
@@ -106,12 +115,22 @@ public class HPCService {
 
     private List<Query> readQueries() {
         List<HPCService.Query> qs = new ArrayList<HPCService.Query>();
-        String queryFile = System.getProperty("query.file");
-        if (!queryFile.startsWith("/")) {
-            String currentPath = System.getProperty("user.dir");
-            queryFile = currentPath + (currentPath.endsWith("/") ? "" : "/") + queryFile;
+        String queryContents = null;
+        if (System.getProperty("query.file") != null) {
+            String queryFile = System.getProperty("query.file");
+            if (!queryFile.startsWith("/")) {
+                String currentPath = System.getProperty("user.dir");
+                queryFile = currentPath + (currentPath.endsWith("/") ? "" : "/") + queryFile;
+                try {
+                    queryContents = getContents(new FileReader(new File(queryFile)));
+                } catch (IOException e) {
+                    logger.warn("Error reading {} file.", QUERY_PROP_FILE);
+                }
+            }
+        } else {
+            InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(QUERY_PROP_FILE);
+            queryContents = getContents(new InputStreamReader(fileStream));
         }
-        String queryContents = getContents(new File(queryFile));
 
         String[] vals = queryContents.split("\",[ \t\n]*\"");
         for (int i = 0; i < vals.length; i += 3) {
@@ -124,10 +143,10 @@ public class HPCService {
         return qs;
     }
 
-    private String getContents(File file) {
+    private String getContents(InputStreamReader fileStream) {
         StringBuilder contents = new StringBuilder();
         try {
-            BufferedReader input = new BufferedReader(new FileReader(file));
+            BufferedReader input = new BufferedReader(fileStream);
             try {
                 String line = null;
                 while ((line = input.readLine()) != null) {
