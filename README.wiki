@@ -18,13 +18,14 @@ cd ../agentspring-example/
 mvn clean install
 
 == RUNNING ==
-cd ../agentspring-face/
-
-mvn jetty:run
 
 cd agentspring-example/
 
 mvn exec:java
+
+cd ../agentspring-face/
+
+mvn jetty:run
 
 open browser: http://localhost:8080/agentspring-face
 
