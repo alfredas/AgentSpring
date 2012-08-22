@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:neo4j="http://www.springframework.org/schema/data/neo4j"
+    xsi:schemaLocation="
+	    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://www.springframework.org/schema/data/neo4j http://www.springframework.org/schema/data/neo4j/spring-neo4j-2.0.xsd">  
+  
+	<!-- ===== Domain Repositories ========= -->
+	<!-- Edit the value to match the package name of your repositories -->
+	<neo4j:repositories base-package="example.repository"/>
+  
+	<!-- ===== Domain Behaviors ========= -->
+	<!-- Edit the value to match the package name of your roles -->
+	<context:component-scan base-package="example.role"/>
+
+	<bean id="engineService" class="agentspring.service.EngineServiceImpl"/>
+		<bean id="dbService" class="agentspring.service.DbServiceImpl">
+		<property name="filters" ref="dbFilters"/>
+	</bean>
+	
+	<!-- Edit the value to point to the database folder - For headless mode the folder depends on the run.id -->
+	<bean id="dbPath" class="java.lang.String">
+	    <constructor-arg type="java.lang.String" value="/tmp/ramdisk/agentspring-example-db/${run.id}/" />
+	</bean>
+	<bean class="agentspring.graphdb.NodeEntityHelper">
+		<property name="prefix" value="example"/>
+	</bean>
+	
+	<!-- Can be set to a costumized filter implementation class  -->
+	<bean id="dbFilters" class="agentspring.graphdb.DefaultFiltersImpl"/>
+
+	<!-- Necessary to set variable database folders, based on the run.id -->
+	<bean id="projectPropertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+</beans>
