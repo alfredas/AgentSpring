@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
@@ -39,8 +42,9 @@ import com.tinkerpop.blueprints.pgm.impls.neo4j.Neo4jGraph;
 
 /**
  * Engine service methods: start, stop, pause
+ * 
  * @author alfredas
- *
+ * 
  */
 public class EngineServiceImpl implements EngineService, ApplicationContextAware {
 
@@ -77,6 +81,26 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         } else {
             throw new EngineException("Scenarios not found. Please put your scenario files in the src/main/java/scenarios folder.");
         }
+    }
+
+    public void init(String scenarioString) throws EngineException {
+
+        this.scenarios = findScenarios();
+
+        Scenario initScenario = null;
+
+        for (Scenario scenario : scenarios) {
+            if (scenarioString.equals(scenario.getName())) {
+                initScenario = scenario;
+            }
+        }
+
+        if (initScenario != null) {
+            init(initScenario);
+        } else {
+            throw new EngineException("Specified scenario not found. Please put your scenario files in the src/main/java/scenarios folder.");
+        }
+
     }
 
     public void init(Scenario scenario) throws EngineException {
@@ -400,20 +424,40 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
     private List<Scenario> findScenarios() throws EngineException {
         try {
             URL url = this.getClass().getResource(SCENARIO_FOLDER);
-            File scenarioFolder = new File(url.toURI());
-            if (scenarioFolder.isDirectory()) {
-                File[] scenarios = scenarioFolder.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return (name.endsWith(".xml"));
+            if (!url.getProtocol().contains("jar")) {
+                File scenarioFolder = new File(url.toURI());
+                if (scenarioFolder.isDirectory()) {
+                    File[] scenarios = scenarioFolder.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return (name.endsWith(".xml"));
+                        }
+                    });
+                    List<Scenario> sList = new ArrayList<Scenario>();
+                    for (File sf : scenarios) {
+                        sList.add(new Scenario(sf.getName(), sf.getAbsolutePath()));
                     }
-                });
+
+                    return sList;
+                }
+            } else {
                 List<Scenario> sList = new ArrayList<Scenario>();
-                for (File sf : scenarios) {
-                    sList.add(new Scenario(sf.getName(), sf.getAbsolutePath()));
+                CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
+                URL jar = src.getLocation();
+                ZipInputStream zip = new ZipInputStream(jar.openStream());
+                ZipEntry ze = null;
+                while ((ze = zip.getNextEntry()) != null) {
+                    String entryName = ze.getName();
+                    if (entryName.contains(SCENARIO_FOLDER.substring(1)) && entryName.endsWith(".xml")) {
+                        String scenarioName = entryName.substring(SCENARIO_FOLDER.length());
+                        String path = jar + entryName;
+                        sList.add(new Scenario(scenarioName, path));
+                    }
+
                 }
                 return sList;
             }
+
         } catch (Exception err) {
             throw new EngineException("Scenarios folder not found. Please put your scenarios in a folder called scenarios.");
         }

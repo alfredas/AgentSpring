@@ -123,6 +123,43 @@
           </dependency>
         </dependencies>
       </plugin>
+                   
+	  <!-- If enabled, creates binary distributions of the project (war,jar,targz), with HPCService as main class -->      
+<!--       <plugin> -->
+<!--         <groupId>org.apache.maven.plugins</groupId> -->
+<!--         <artifactId>maven-shade-plugin</artifactId> -->
+<!--         <version>1.4</version> -->
+<!--         <executions> -->
+<!--           <execution> -->
+<!--             <phase>package</phase> -->
+<!--             <goals> -->
+<!--               <goal>shade</goal> -->
+<!--             </goals> -->
+<!--             <configuration> -->
+<!--               <transformers> -->
+<!--                 <transformer -->
+<!--                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+<!--                   <mainClass>agentspring.HPCService</mainClass> -->
+<!--                 </transformer> -->
+<!--                 <transformer -->
+<!--                   implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"> -->
+<!--                   <resource>META-INF/spring.handlers</resource> -->
+<!--                 </transformer> -->
+<!--                 <transformer -->
+<!--                   implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"> -->
+<!--                   <resource>META-INF/spring.schemas</resource> -->
+<!--                 </transformer> -->
+<!--                 Enable this transformer if you have a queries.properties file in the same directory as the pom.xml -->
+<!--                 <transformer  -->
+<!--                	  implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer"> -->
+<!--                  	<resource>queries.properties</resource> -->
+<!--                  	<file>queries.properties</file> -->
+<!--                 </transformer> -->
+<!--               </transformers> -->
+<!--             </configuration> -->
+<!--           </execution> -->
+<!--         </executions> -->
+<!--       </plugin> -->
       <plugin>
         <!-- Execute the main class -->
         <groupId>org.codehaus.mojo</groupId>
