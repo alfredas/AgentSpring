@@ -73,6 +73,35 @@ public class ParametersController {
         }
     }
 
+    @RequestMapping(value = "/saveone", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonResponse save(@RequestParam("id") String id, @RequestParam("field") String field, @RequestParam("value") String value) {
+        Map<String, Map<String, ScenarioParameter>> params = new HashMap<String, Map<String, ScenarioParameter>>();
+        Map<String, ConfigurableObject> oldParams = this.engineService.getScenarioParameters();
+
+        Map<String, ScenarioParameter> p = new HashMap<String, ScenarioParameter>();
+
+        Object val = null;
+        String error = null;
+        ConfigurableObject obj = oldParams.get(id);
+        ScenarioParameter param = obj.getParameter(field);
+
+        try {
+            val = this.parseValue(param.getValue(), value);
+        } catch (IllegalArgumentException e) {
+            error = "Incorrect value for '" + id + "' field '" + field + "' (" + e.getMessage() + ")";
+        }
+
+        if (error == null && val != null) {
+            this.engineService.setScenarioParameter(id, field, val);
+            return new JsonResponse(true);
+        } else {
+            JsonResponse response = new JsonResponse(false);
+            response.setError(error);
+            return response;
+        }
+    }
+
     // HACKED UP parser
     private Object parseValue(Object oldValue, String newValue) throws IllegalArgumentException {
         Object result = null;

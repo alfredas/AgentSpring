@@ -26,6 +26,7 @@ import org.springframework.data.neo4j.aspects.core.NodeBacked;
 import org.springframework.data.neo4j.fieldaccess.NodeDelegatingFieldAccessorFactory;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.node.NodeEntityStateFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.EngineException;
 import agentspring.facade.ConfigurableObject;
@@ -384,7 +385,18 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
         this.updateScenarioParameters();
     }
 
-    // HACK: reflection
+    @Override
+    public synchronized void setScenarioParameter(String obj, String field, Object value) {
+        // perform sanity check first to avoid exploitation by hackers
+        if (!this.scenarioParameters.containsKey(obj)) {
+            throw new RuntimeException("Object with id '" + obj + "' can not be configured");
+        }
+        ConfigurableObject oldObj = this.scenarioParameters.get(obj);
+        oldObj.setParamValue(field, value);
+        this.updateScenarioParameters();
+    }
+
+    @Transactional
     private void updateScenarioParameters() {
         for (ConfigurableObject configObj : this.scenarioParameters.values()) {
             String beanName = configObj.getId();
@@ -409,7 +421,9 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
-                        ((NodeBacked) bean).persist();
+                        if (bean instanceof NodeBacked) {
+                            ((NodeBacked) bean).persist();
+                        }
                         break;
                     }
                 }

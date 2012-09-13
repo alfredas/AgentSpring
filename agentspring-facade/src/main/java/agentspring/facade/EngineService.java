@@ -32,6 +32,8 @@ public interface EngineService {
 
     public void setScenarioParameters(Map<String, Map<String, ScenarioParameter>> parameters);
 
+    public void setScenarioParameter(String obj, String field, Object value);
+
     // helper methods
 
     /**
