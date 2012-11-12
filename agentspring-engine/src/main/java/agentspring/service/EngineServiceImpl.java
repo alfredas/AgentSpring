@@ -70,7 +70,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
     private Scenario currentScenario;
     private boolean scenarioLoaded = false;
     private HashMap<String, ConfigurableObject> scenarioParameters = new HashMap<String, ConfigurableObject>();
-    private static final String SCENARIO_FOLDER = "/scenarios";
+    private String SCENARIO_FOLDER = "/scenarios";
 
     @SuppressWarnings("unchecked")
     public void init() throws EngineException {
@@ -436,8 +436,16 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
     }
 
     private List<Scenario> findScenarios() throws EngineException {
+        System.out.println("Find scenarios");
         try {
-            URL url = this.getClass().getResource(SCENARIO_FOLDER);
+            URL url = null;
+            if (System.getProperties().containsKey("SCENARIO_FOLDER")) {
+                SCENARIO_FOLDER = System.getProperty("SCENARIO_FOLDER");
+                System.out.println("Got scenario folder:" + SCENARIO_FOLDER);
+                url = new URL(SCENARIO_FOLDER);
+            } else {
+                url = this.getClass().getResource(SCENARIO_FOLDER);
+            }
             if (!url.getProtocol().contains("jar")) {
                 File scenarioFolder = new File(url.toURI());
                 if (scenarioFolder.isDirectory()) {
@@ -473,6 +481,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
             }
 
         } catch (Exception err) {
+            err.printStackTrace();
             throw new EngineException("Scenarios folder not found. Please put your scenarios in a folder called scenarios.");
         }
         return null;
