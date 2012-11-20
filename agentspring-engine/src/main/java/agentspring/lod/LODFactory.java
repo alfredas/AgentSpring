@@ -204,6 +204,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     // apply bean post processor
                     // (agentspring.PersistingBeanPostProcessor) - to store bean
                     // in the graphDB
+                    //template.save(obj);
                     factory.initializeBean(obj, beanId);
                 } catch (Exception e) {
                     logger.error("Error creating instance of class " + clazz.getName(), e);
