@@ -43,22 +43,26 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class LODFactory implements InitializingBean, ApplicationContextAware {
 
+    // private Set<Class<?>> classesUsed;
+    private String factoryEndpoint;
+    private String factoryNamespace;
+
     private ApplicationContext applicationContext;
     private Neo4jTemplate template;
-    
+
     static Logger logger = LoggerFactory.getLogger(LODFactory.class);
     static String ID_NAME = "x_id";
 
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        // get prefix defined in NodeEntityHelper    	
-    	NodeEntityHelper helper = applicationContext.getParent().getBeansOfType(NodeEntityHelper.class).values().iterator().next();
-    	String prefix = helper.getPrefix();
-    	
-    	// get the Neo4J Template for finding stuff
-    	template = applicationContext.getParent().getBeansOfType(Neo4jTemplate.class).values().iterator().next();
-    	
+        // get prefix defined in NodeEntityHelper
+        NodeEntityHelper helper = applicationContext.getParent().getBeansOfType(NodeEntityHelper.class).values()
+                .iterator().next();
+        String prefix = helper.getPrefix();
+
+        // get the Neo4J Template for finding stuff
+        template = applicationContext.getParent().getBeansOfType(Neo4jTemplate.class).values().iterator().next();
+
         if (template != null) {
             this.createObjects(prefix);
         }
@@ -125,9 +129,30 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
         for (Class<?> clazz : depList) {
             // get annotation parameters
             LODType lodType = clazz.getAnnotation(LODType.class);
+
+            // Determine endpoint and namespace, but override if given in the
+            // factory
             String endpoint = lodType.endpoint();
-            String type = lodType.type();
+            if (getFactoryEndpoint() != "") {
+                endpoint = getFactoryEndpoint();
+            }
+            if (endpoint == "") {
+                logger.error(
+                        "LODFactory error: endpoint not present in annotation of class {} and also not specified in LODFactory",
+                        clazz);
+            }
+
             String namespace = lodType.namespace();
+            if (getFactoryNamespace() != "") {
+                namespace = getFactoryNamespace();
+            }
+            if (namespace == "") {
+                logger.error(
+                        "LODFactory error: namespace not present in annotation of class {} and also not specified in LODFactory",
+                        clazz);
+            }
+
+            String type = lodType.type();
             String[] filters = lodType.filters();
             String limit = lodType.limit();
             String query = lodType.query();
@@ -137,6 +162,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
             // map: rdf property name <-> field name
             Map<String, String> fieldMap = new HashMap<String, String>();
+            Map<String, Boolean> optionalMap = new HashMap<String, Boolean>();
             int index = 0;
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(LODProperty.class)) {
@@ -147,6 +173,7 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     }
                     String fieldName = field.getName();
                     fieldMap.put(propertyRDFname, fieldName);
+                    optionalMap.put(propertyRDFname, field.getAnnotation(LODProperty.class).optional());
                     index++;
                 }
                 if (field.isAnnotationPresent(LODId.class)) {
@@ -161,9 +188,9 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
             if (query.length() == 0) {
                 // construct query
-                query = this.constructQuery(namespace, type, filters, limit, fieldMap);
+                query = this.constructQuery(namespace, type, filters, limit, fieldMap, optionalMap);
             }
-            logger.info("Will execute query: {}", query);
+            logger.warn("Will execute query: {}", query);
 
             // for each result returned create an instance of the class and
             // populate it with data from the query
@@ -204,7 +231,6 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                     // apply bean post processor
                     // (agentspring.PersistingBeanPostProcessor) - to store bean
                     // in the graphDB
-                    //template.save(obj);
                     factory.initializeBean(obj, beanId);
                 } catch (Exception e) {
                     logger.error("Error creating instance of class " + clazz.getName(), e);
@@ -231,17 +257,33 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
     /*
      * construct query based on the fields and type provided
      */
-    private String constructQuery(String namespace, String type, String[] filters, String limit, Map<String, String> fieldMap) {
+    private String constructQuery(String namespace, String type, String[] filters, String limit,
+            Map<String, String> fieldMap, Map<String, Boolean> optionalMap) {
         String query = "SELECT ?" + ID_NAME;
         for (String field : fieldMap.values()) {
             query += " ?" + field;
         }
         query += " WHERE {";
+
+        // First all non-optional parameters
         query += " ?" + ID_NAME + " a " + getFullName(type, namespace) + "; ";
         for (Entry<String, String> entry : fieldMap.entrySet()) {
-            query += getFullName(entry.getKey(), namespace) + " ?" + entry.getValue() + "; ";
+            if (!optionalMap.get(entry.getKey())) {
+                query += getFullName(entry.getKey(), namespace) + " ?" + entry.getValue() + "; ";
+            }
         }
-        query = query.substring(0, query.lastIndexOf(";")) + ". ";
+        query = query.substring(0, query.lastIndexOf(";")) + ". \n";
+
+        // Now all optional parameters
+        query += " OPTIONAL { ";
+        query += " ?" + ID_NAME + " a " + getFullName(type, namespace) + "; ";
+        for (Entry<String, String> entry : fieldMap.entrySet()) {
+            if (optionalMap.get(entry.getKey())) {
+                query += getFullName(entry.getKey(), namespace) + " ?" + entry.getValue() + "; ";
+            }
+        }
+        query = query.substring(0, query.lastIndexOf(";")) + ". }";
+
         if (filters.length > 0) {
             query += " Filter(";
             for (String filter : filters) {
@@ -259,7 +301,8 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
     /*
      * execute results and return list of maps with results fieldName <-> value
      */
-    private List<Map<String, Object>> executeQuery(Class<?> clazz, String endpoint, String queryString, Collection<String> fields) {
+    private List<Map<String, Object>> executeQuery(Class<?> clazz, String endpoint, String queryString,
+            Collection<String> fields) {
 
         List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
 
@@ -309,8 +352,8 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
      * look up a persisted value by ID.
      */
     @SuppressWarnings("unchecked")
-    private <T extends GraphBacked<?, ?>> T findDbValue(Class<?> clazz, String fieldName, String id) throws SecurityException,
-            NoSuchFieldException {
+    private <T extends GraphBacked<?, ?>> T findDbValue(Class<?> clazz, String fieldName, String id)
+            throws SecurityException, NoSuchFieldException {
         // get the type (class) of the field
         Class<T> type = (Class<T>) clazz.getDeclaredField(fieldName).getType();
         Field idField = null;
@@ -385,6 +428,22 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
                 return -1;
             }
         }
+    }
+
+    public String getFactoryEndpoint() {
+        return factoryEndpoint;
+    }
+
+    public void setFactoryEndpoint(String factoryEndpoint) {
+        this.factoryEndpoint = factoryEndpoint;
+    }
+
+    public String getFactoryNamespace() {
+        return factoryNamespace;
+    }
+
+    public void setFactoryNamespace(String factoryNamespace) {
+        this.factoryNamespace = factoryNamespace;
     }
 
 }

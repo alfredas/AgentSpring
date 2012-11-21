@@ -12,4 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public @interface LODProperty {
     String value() default "";
+
+    boolean optional() default false;
 }
