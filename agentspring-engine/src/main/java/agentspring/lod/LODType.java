@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 public @interface LODType {
     String query() default "";
 
-    String endpoint();
+    String endpoint() default "";
 
-    String namespace();
+    String namespace() default "";
 
     String type() default "";
 
