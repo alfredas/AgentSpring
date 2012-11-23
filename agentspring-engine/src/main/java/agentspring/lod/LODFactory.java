@@ -43,7 +43,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class LODFactory implements InitializingBean, ApplicationContextAware {
 
-    // private Set<Class<?>> classesUsed;
+    private String[] classesIncluded;
     private String factoryEndpoint;
     private String factoryNamespace;
 
@@ -86,7 +86,23 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
         // create dependency map by scanning classes and their fields that are
         // @RelatedTo other classes
-        for (Class<?> clazz : reflections.getTypesAnnotatedWith(LODType.class)) {
+        List<Class<?>> classesToLookAt = new ArrayList<Class<?>>();
+        if (classesIncluded == null) {
+            logger.warn("LODFactory: all classes included");
+            classesToLookAt.addAll(reflections.getTypesAnnotatedWith(LODType.class));
+        } else if (classesIncluded.length == 0) {
+            logger.warn("LODFactory: no classes included");
+        } else {
+            for (String cls : classesIncluded) {
+                try {
+                    classesToLookAt.add(Class.forName(cls));
+                } catch (ClassNotFoundException e) {
+                    logger.error("LODFactory: could not find class {}", cls);
+                }
+            }
+        }
+
+        for (Class<?> clazz : classesToLookAt) {
             List<Class<?>> deps = new ArrayList<Class<?>>();
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(LODProperty.class) && field.isAnnotationPresent(RelatedTo.class)) {
@@ -444,6 +460,14 @@ public class LODFactory implements InitializingBean, ApplicationContextAware {
 
     public void setFactoryNamespace(String factoryNamespace) {
         this.factoryNamespace = factoryNamespace;
+    }
+
+    public String[] getClassesIncluded() {
+        return classesIncluded;
+    }
+
+    public void setClassesIncluded(String[] classesIncluded) {
+        this.classesIncluded = classesIncluded;
     }
 
 }
