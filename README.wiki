@@ -1,19 +1,7 @@
 == INSTALL (linux) ==
 git clone https://github.com/alfredas/AgentSpring.git
 
-cd agentspring-facade/
-
-mvn clean install
-
-cd ../agentspring-engine/
-
-mvn clean install
-
-cd ../agentspring-face/
-
-mvn clean install
-
-cd ../agentspring-example/
+cd AgentSpring/
 
 mvn clean install
 
