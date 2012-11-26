@@ -3,6 +3,8 @@
     <groupId>agentspring</groupId>
     <artifactId>agentspring-facade</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <name>agentspring-facade</name>
+
     <build>
         <plugins>
             <plugin>
