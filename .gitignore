@@ -4,3 +4,9 @@
 */.settings
 .svn
 TODO.dry
+*~
+*.log
+log.roo
+facedb.properties
+.project
+.settings/
