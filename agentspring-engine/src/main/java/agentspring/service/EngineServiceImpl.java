@@ -153,7 +153,7 @@ public class EngineServiceImpl implements EngineService, ApplicationContextAware
 
     @Override
     public EngineEvent listen() {
-        if (this.events.isEmpty()) {
+        while (this.events.isEmpty()) {
             synchronized (this.waiter) {
                 try {
                     this.waiter.wait();
