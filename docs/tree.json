@@ -1,0 +1,35 @@
+{
+ "name": "RunPowerCompany",
+ "children": [
+  {
+   "name": "InvestInPowerGeneration",
+   "children": [
+    {"name": "MakePredictions"},
+    {"name": "ArrangeFinances"},
+    {"name": "InvestInAssets"}
+    ]
+  },
+  {
+   "name": "TradeCommodities",
+   "children": [
+    {"name": "SubmitBidsToMarkets"},
+    {"name": "AcceptOffers"}
+   ]
+  },
+  {
+   "name": "TradePower",
+   "children": [
+    {"name": "SubmitOffersToMarkets"},
+    {"name": "SignContracts"}
+   ]
+  },
+  {
+   "name": "MakeOperatingPayments",
+   "children": [
+    {"name": "PayLoanInterest"},
+    {"name": "PayOperatingCosts"},
+    {"name": "PayTaxes"}
+   ]
+  }
+ ]
+}

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>AgentSpring</title>
+    <meta charset='utf-8'>
+    <script src='scripts/slides.js'></script>
+  </head>
+
+  <style>
+    .slides.template-default article.biglogo {
+      background: white url(images/agent-spring-logo-slide.png) 50% 50% no-repeat !important;
+    }
+    .slides.template-default > article:not(.nobackground):not(.biglogo) {
+      background: url(images/agent-spring-logo-small.png) 820px 580px no-repeat !important;  
+      background-color: white !important;  
+    } 
+  </style>
+  
+  <body style='display: none'>
+
+    <section class='slides layout-regular template-default'>
+      
+      <article class='biglogo'>
+      </article>
+
+      <article>
+        <h1>
+          AgentSpring:
+          <br>
+          Using Graphs to Build Simulations
+        </h1>
+        <p>
+          Alfredas Chmieliauskas
+          <br>
+          March 2, 2013
+        </p>
+      </article>
+      
+      <article>
+        <h3>
+          What is AgentSpring?
+        </h3>
+        <p>
+          AgentSpring is an Agent Based Modeling and simulation framework based on Spring and Neo4j - a powerful graph database.
+        </p>
+        <p>
+          There are around 60 ABM frameworks/libraries/packages available already. Why another ABM framework?
+        </p>
+      </article>
+
+      <article class='smaller'>
+        <h3>
+          Inspiration
+        </h3>
+        <p>
+          <img src='images/spgu.gif' style='float: left; margin-right: 40px;'>
+        </p>
+        <p>
+AgentSpring is inspired and based on the AI (NLP) classic <a href="http://www.amazon.com/Scripts-Plans-Goals-Understanding-Intelligence/dp/0898591384">Scripts, Plans, Goals, and Understanding: An Inquiry Into Human Knowledge Structures</a> by Roger C. Schank and Robert P. Abelson (1977).
+        </p>
+        <p>
+          "For both people and machines, each in their own way, there is a serious problem in common of making sense out of what they hear, see, or are told about the world. The conceptual apparatus necessary to perform even a partial feat of understanding is formidable and fascinating. Our analysis of this apparatus is what this book is about."
+        </p>
+        <p>
+          <em>-- Roger C. Schank and Robert P. Abelson</em>
+        </p>
+      </article>
+
+
+      <article >
+        <h3>
+          Scripts -&gt; Plans -&gt; Goals
+        </h3>
+        <p>
+          To achieve our goals we create plans, that are composed of scripts. 
+        </p>
+        <p>Scripts are:</p>
+        <ul style='margin-top: 20px;'>
+          <li>modular, </li>
+          <li>reusable, </li>
+          <li>rather simple </li>
+        </ul>
+        <p>... set of actions that allow us to "get things done". </p>
+        <p>
+          For example, a plan to have a fancy dinner with your spouse would be composed out myriad of scipts, such as: "book a restaurant", "dress up", "get a cab", etc.
+        </p>
+      </article>
+
+      <article>
+        <h3>
+          Composition of behavior
+        </h3>
+        <p>
+Models are made by composing scripts enabling the modeler to define complex agent behavior. This makes AgentSpring particularly suited to modeling social systems.
+        </p>
+        <iframe src='tree.html' scrolling='no' style='border:none'></iframe>
+      </article>
+
+
+
+      <article>
+        <h3>
+          On the shoulders of giants
+        </h3>
+        <p>
+          AgentSpring puts software first. It is as much about the ideology of ABM as it is about using great open-source libraries and development frameworks. 
+        </p>
+        <ul>
+          <li>
+            <a href='http://www.springsource.org/spring-framework'>Spring framework</a> provides a consistent way to build modular, configurable and scalable enterprise applications. 
+          </li>
+          <li>
+            <a href='http://www.neo4j.org/'>Neo4j</a> provides the persistence layer needed to store the complex object graph that is the simulated world. 
+          </li>
+        </ul>
+        <p>
+          We have found that a native graph DB is particularly well suited for ABM development, compared to any other persistence method.
+        </p>
+       
+      </article>
+
+      <article>
+        <h3>
+          Modular and reusable
+        </h3>
+        <p>
+AgentSpring, with the help of Spring Framework, decouples agents, their behaviors and their environments making the pieces reusable and easy to manage. Experience has shown that modular models are the only kind of models that can accommodate changing scope and new research questions.
+        </p>
+       
+      </article>
+
+       <article>
+        <h3>
+          Patterns and architectures
+        </h3>
+        <p>
+Many of the popular ABM libraries and packages mold data, model logic and user interface together, which is a known ...sin. AgentSpring builds on well known software architecture patterns to make models more understandable and reusable.
+        </p>
+       
+      </article>
+
+
+      <article>
+        <h3>
+          Graphs
+        </h3>
+        <p>
+          <img class='centered' style='height: 500px'  src='images/graph.png'/>
+        </p>
+       
+      </article>
+
+       <article>
+        <h3>
+          Graphs for domain modeling
+        </h3>
+        <p>
+          <img class='centered' style='height: 500px'  src='images/fuel-market.png'/>
+        </p>
+       
+      </article>
+
+
+       <article class='smaller'>
+        <h3>
+          Code: POJO + annotations
+        </h3>
+        <section>
+        <pre>
+@NodeEntity
+public class PowerPlant {
+
+  @RelatedTo(type = "uses", direction = Direction.OUTGOING)
+  private PowerGeneratingTechnology technology;
+
+  @RelatedTo(type = "owns", direction = Direction.INCOMING)
+  private EnergyProducer owner;
+
+  @RelatedTo(type = "located", direction = Direction.OUTGOING)
+  private PowerGridNode location;
+
+...
+}
+
+</pre>
+        </section>
+       
+      </article>
+
+
+      <article class='smaller'>
+        <h3>
+         Finding things in a graph
+        </h3>
+        <section>
+        <pre>
+@Query("start owner=node({owner}) 
+        match (owner)-[:owns]->(plant) 
+        return plant")
+public Iterable<PowerPlant> findPowerPlantsByOwner(
+        @Param("owner") EnergyProducer owner);
+
+@Query("start tech=node({tech}) 
+        match (plant)-[:uses]->(tech) 
+        return sum(plant.capacity)")
+public double sumCapacityOfPowerPlantsByTechnology(
+        @Param("tech") PowerGeneratingTechnology technology);
+
+@Query("start owner=node({owner}) 
+        match (owner)-[:owns]->(plant)-[:uses]->(tech) 
+        return plant")
+public Iterable<PowerPlant> findPowerPlantsByOwnerAndTechnology(
+        @Param("owner") EnergyProducer owner,
+        @Param("tech") PowerGeneratingTechnology technology);
+
+      </pre>
+        </section>
+       <p><a href='http://docs.neo4j.org/chunked/stable/cypher-query-lang.html'>Cypher query language</a> &amp; <a href='https://github.com/thinkaurelius/titan/wiki/Gremlin-Query-Language'>Gremlin query language</a></p>
+      </article>
+      
+
+      <article>
+        <h3>
+          More complicated example
+        </h3>
+        <p>
+          <img class='centered' style='height: 500px'  src='images/bids.png'/>
+        </p>
+       
+      </article>
+
+       <article>
+        <h3>
+          Even more complicated example
+        </h3>
+        <p>
+          <img class='centered' style='height: 500px'  src='images/d13n-graph2-sm.png'/>
+        </p>
+       
+      </article>
+
+
+
+      <article>
+        <h3>
+          User interface
+        </h3>
+        <p>
+AgentSpring provides a feature rich web-based user interface.
+        </p>
+       
+      </article>  
+
+      
+
+       <article class='fill'>
+        <p>
+          <img src='images/snapshot-face.png'>
+        </p>
+      </article>
+
+      <article>
+        <h3>
+          Machine interfaces
+        </h3>
+        <p>
+          REST, Java RMI
+        </p>
+        <p>
+          make it easy to integrate with other tools and packages (R, web, visualisation, custom GUIs)
+        </p>
+      </article>  
+
+      <article>
+        <h3>
+          Being social
+        </h3>
+        <p>
+AgentSpring is committed to open-source. Using open-source libraries also allows to participate in active developer communities and do more together. This has been proven by a successful collaboration with Neo4j developers.
+        </p>
+       <p>Anyone is welcome to use, learn and contribute: <a href="https://github.com/alfredas/AgentSpring">https://github.com/alfredas/AgentSpring</a></p>
+      
+      </article>
+
+      
+
+      <article>
+        <h3>
+          Thank you!
+        </h3>
+        
+        <p>
+          <a href='mailto:a.chmieliauskas@tudelft.nl'>a.chmieliauskas@tudelft.nl</a>
+        </p>
+      </article>
+
+    </section>
+
+  </body>
+</html>
