@@ -121,11 +121,11 @@ public class HPCService {
             if (!queryFile.startsWith("/")) {
                 String currentPath = System.getProperty("user.dir");
                 queryFile = currentPath + (currentPath.endsWith("/") ? "" : "/") + queryFile;
-                try {
-                    queryContents = getContents(new FileReader(new File(queryFile)));
-                } catch (IOException e) {
-                    logger.warn("Error reading {} file.", QUERY_PROP_FILE);
-                }
+            }
+            try {
+                queryContents = getContents(new FileReader(new File(queryFile)));
+            } catch (IOException e) {
+                logger.warn("Error reading {} file.", QUERY_PROP_FILE);
             }
         } else {
             InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(QUERY_PROP_FILE);
