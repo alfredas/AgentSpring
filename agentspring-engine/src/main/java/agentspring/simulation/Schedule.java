@@ -70,14 +70,14 @@ public class Schedule {
                 }
                 synchronized (this) {
                     for (SimulationListener listener : Schedule.this.listeners) {
-                        logger.info("WAKE PROBLEM DEBUG: executing tick end event for listener: {}", listener);
+                        logger.warn("WAKE PROBLEM DEBUG: executing tick end event for listener: {}", listener);
                         listener.act(EngineEvent.TICK_END);
                     }
                     // engine sleeps while client collects data
                     try {
-                        logger.info("WAKE PROBLEM DEBUG: about to to wait for the client to collect data and wake me up");
+                        logger.warn("WAKE PROBLEM DEBUG: about to to wait for the client to collect data and wake me up");
                         this.wait();
-                        logger.info("WAKE PROBLEM DEBUG: i just woke up");
+                        logger.warn("WAKE PROBLEM DEBUG: i just woke up");
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -131,7 +131,7 @@ public class Schedule {
                 logger.warn("Engine is not sleeping, can not wake");
             } else {
                 // this.state = EngineState.RUNNING;
-                logger.info("WAKE PROBLEM DEBUG: about to to notify simulation runner thread");
+                logger.warn("WAKE PROBLEM DEBUG: about to to notify simulation runner thread");
                 this.runner.notifyAll();
             }
         }

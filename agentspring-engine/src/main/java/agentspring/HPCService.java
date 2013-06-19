@@ -169,7 +169,7 @@ public class HPCService {
                 if (event == EngineEvent.TICK_END) {
                     // execute query
                     saveResults(runQueries());
-                    logger.info("WAKE PROBLEM DEBUG: about to wake engine");
+                    logger.warn("WAKE PROBLEM DEBUG: about to wake engine");
                     engine.wake();
                 }
                 if (engine.getState() == EngineState.STOPPING) {
