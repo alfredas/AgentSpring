@@ -468,23 +468,23 @@
       </snapshots>
     </repository>
      -->
-    <repository>
-      <id>tinkerpop-repository</id>
-      <name>TinkerPop Maven2 Repository</name>
-      <url>http://tinkerpop.com/maven2</url>
-    </repository>
+<!--     <repository> -->
+<!--       <id>tinkerpop-repository</id> -->
+<!--       <name>TinkerPop Maven2 Repository</name> -->
+<!--       <url>http://tinkerpop.com/maven2</url> -->
+<!--     </repository> -->
 
-    <repository>
-      <id>reflections-repo</id>
-      <name>Reflections Maven2 Repository</name>
-      <url>http://reflections.googlecode.com/svn/repo</url>
-    </repository>
+<!--     <repository> -->
+<!--       <id>reflections-repo</id> -->
+<!--       <name>Reflections Maven2 Repository</name> -->
+<!--       <url>http://reflections.googlecode.com/svn/repo</url> -->
+<!--     </repository> -->
 
-    <repository>
-      <id>repo2 maven</id>
-      <name>Maven2 Repository</name>
-      <url>http://repo2.maven.org/maven2</url>
-    </repository>
+<!--     <repository> -->
+<!--       <id>repo2 maven</id> -->
+<!--       <name>Maven2 Repository</name> -->
+<!--       <url>http://repo2.maven.org/maven2</url> -->
+<!--     </repository> -->
 
   </repositories>
 </project>
