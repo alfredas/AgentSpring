@@ -27,5 +27,9 @@ Do New Project -> Maven -> Import Existing Project
 Use and modify agentspring-example to create your own simulation
 
 
+If you are usng STS (Spring Tool Suite) 3.3.0 based on Eclipse Kepler of Juno the sequence is File, Import, then Maven, Existing Maven
+Projects. You can now browse, e.g., to AgentSpring/agentspring-example
+
+
 
 
